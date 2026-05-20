@@ -1,5 +1,5 @@
 from flask import Flask, redirect, url_for, request, Response, render_template, send_from_directory
-from flask_login import LoginManager, current_user
+from flask_login import LoginManager, current_user, login_user
 from flask_migrate import Migrate
 from urllib.parse import unquote
 import requests
@@ -61,6 +61,51 @@ def _set_if_column(model_obj, column_names, value):
             setattr(model_obj, column_name, value)
 
 
+def _get_user_columns():
+    try:
+        return set(User.__table__.columns.keys())
+    except Exception:
+        return set()
+
+
+def _find_demo_admin_user():
+    """
+    Find demo user using the fields that may exist in your User model.
+    """
+    available_columns = _get_user_columns()
+
+    lookup_attempts = []
+
+    if "username" in available_columns:
+        lookup_attempts.append(("username", "admin"))
+
+    if "email" in available_columns:
+        lookup_attempts.append(("email", "admin"))
+        lookup_attempts.append(("email", "admin@demo.com"))
+
+    if "user_name" in available_columns:
+        lookup_attempts.append(("user_name", "admin"))
+
+    if "login_id" in available_columns:
+        lookup_attempts.append(("login_id", "admin"))
+
+    if "userid" in available_columns:
+        lookup_attempts.append(("userid", "admin"))
+
+    if "user_id" in available_columns:
+        lookup_attempts.append(("user_id", "admin"))
+
+    for column_name, value in lookup_attempts:
+        try:
+            user = User.query.filter_by(**{column_name: value}).first()
+            if user:
+                return user
+        except Exception:
+            pass
+
+    return None
+
+
 def _seed_vercel_demo_admin_user():
     """
     Creates/updates a demo admin user on Vercel.
@@ -71,30 +116,10 @@ def _seed_vercel_demo_admin_user():
 
     This runs only for Vercel/demo SQLite mode.
     """
-    try:
-        available_columns = set(User.__table__.columns.keys())
-    except Exception:
-        available_columns = set()
-
     password_hash = generate_password_hash("admin123")
 
-    existing_user = None
+    existing_user = _find_demo_admin_user()
 
-    # Try finding by username first.
-    if "username" in available_columns:
-        try:
-            existing_user = User.query.filter_by(username="admin").first()
-        except Exception:
-            existing_user = None
-
-    # Then try email, because many Flask apps use email as login field.
-    if existing_user is None and "email" in available_columns:
-        try:
-            existing_user = User.query.filter_by(email="admin").first()
-        except Exception:
-            existing_user = None
-
-    # If no user exists, create one.
     if existing_user is None:
         demo_user = User()
 
@@ -107,12 +132,13 @@ def _seed_vercel_demo_admin_user():
         _set_if_column(demo_user, ["is_admin"], True)
         _set_if_column(demo_user, ["is_approved"], True)
         _set_if_column(demo_user, ["active", "is_active"], True)
+        _set_if_column(demo_user, ["approved"], True)
+        _set_if_column(demo_user, ["status"], "active")
 
         db.session.add(demo_user)
         db.session.commit()
-        return
+        return demo_user
 
-    # If user already exists, force password/admin status so login always works.
     _set_if_column(existing_user, ["username", "user_name", "userid", "user_id", "login_id"], "admin")
     _set_if_column(existing_user, ["email"], "admin")
     _set_if_column(existing_user, ["name", "full_name", "display_name"], "admin")
@@ -122,8 +148,11 @@ def _seed_vercel_demo_admin_user():
     _set_if_column(existing_user, ["is_admin"], True)
     _set_if_column(existing_user, ["is_approved"], True)
     _set_if_column(existing_user, ["active", "is_active"], True)
+    _set_if_column(existing_user, ["approved"], True)
+    _set_if_column(existing_user, ["status"], "active")
 
     db.session.commit()
+    return existing_user
 
 
 def create_app(config_class=Config):
@@ -156,7 +185,22 @@ def create_app(config_class=Config):
 
         app.config["SQLALCHEMY_DATABASE_URI"] = demo_db_uri
         app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-        app.config.setdefault("SECRET_KEY", os.environ.get("SECRET_KEY", "water-quality-demo-secret-key"))
+
+        # IMPORTANT:
+        # Force a stable secret key on Vercel.
+        # If this changes between serverless invocations, login succeeds but session is lost,
+        # causing the app to return to login screen again.
+        app.config["SECRET_KEY"] = os.environ.get(
+            "SECRET_KEY",
+            "water-quality-demo-secret-key-fixed"
+        )
+
+        app.config["SESSION_COOKIE_HTTPONLY"] = True
+        app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+        app.config["SESSION_COOKIE_SECURE"] = True
+        app.config["REMEMBER_COOKIE_SECURE"] = True
+        app.config["REMEMBER_COOKIE_HTTPONLY"] = True
+        app.config["REMEMBER_COOKIE_SAMESITE"] = "Lax"
     else:
         # Create the PostgreSQL database first if it does not exist. This uses the
         # maintenance database configured in config.py, defaulting to postgres.
@@ -223,6 +267,38 @@ def create_app(config_class=Config):
         if current_user.is_authenticated:
             return redirect(url_for('reports.dashboard'))
         return redirect(url_for('auth.login'))
+
+    # ---------------------------------------------------------------------
+    # Demo direct login fallback
+    # ---------------------------------------------------------------------
+    # Use this only on Vercel demo if normal login form still loops.
+    # URL:
+    #   /demo-login
+    # ---------------------------------------------------------------------
+    @app.route("/demo-login", methods=["GET", "POST"])
+    def demo_login():
+        if not is_vercel_demo:
+            return redirect(url_for("auth.login"))
+
+        user = _find_demo_admin_user()
+
+        if user is None:
+            with app.app_context():
+                user = _seed_vercel_demo_admin_user()
+
+        if user is None:
+            return Response(
+                "Demo login failed: could not create or find demo admin user.",
+                status=500,
+                mimetype="text/plain"
+            )
+
+        login_user(user, remember=True, force=True)
+
+        try:
+            return redirect(url_for("reports.dashboard"))
+        except Exception:
+            return redirect("/")
 
     # ✅ ---------------- CRM DASHBOARD ROUTE ----------------
     @app.route("/CRM_Records")
