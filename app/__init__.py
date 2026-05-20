@@ -70,90 +70,58 @@ def _get_user_columns():
 
 def _find_demo_admin_user():
     """
-    Find demo user using the fields that may exist in your User model.
+    Find the Vercel demo admin user.
+    The real User model has columns: id, email, password, role.
+    Login ID shown to user is still: admin
+    Stored email is: admin@demo.com
     """
-    available_columns = _get_user_columns()
+    try:
+        user = User.query.filter_by(email="admin@demo.com").first()
+        if user:
+            return user
+    except Exception:
+        pass
 
-    lookup_attempts = []
-
-    if "username" in available_columns:
-        lookup_attempts.append(("username", "admin"))
-
-    if "email" in available_columns:
-        lookup_attempts.append(("email", "admin"))
-        lookup_attempts.append(("email", "admin@demo.com"))
-
-    if "user_name" in available_columns:
-        lookup_attempts.append(("user_name", "admin"))
-
-    if "login_id" in available_columns:
-        lookup_attempts.append(("login_id", "admin"))
-
-    if "userid" in available_columns:
-        lookup_attempts.append(("userid", "admin"))
-
-    if "user_id" in available_columns:
-        lookup_attempts.append(("user_id", "admin"))
-
-    for column_name, value in lookup_attempts:
-        try:
-            user = User.query.filter_by(**{column_name: value}).first()
-            if user:
-                return user
-        except Exception:
-            pass
+    try:
+        user = User.query.filter_by(email="admin").first()
+        if user:
+            return user
+    except Exception:
+        pass
 
     return None
 
 
 def _seed_vercel_demo_admin_user():
     """
-    Creates/updates a demo admin user on Vercel.
+    Creates/updates the demo admin user on Vercel.
 
     Login to use:
     User / ID: admin
     Password: admin123
 
-    This runs only for Vercel/demo SQLite mode.
+    The login form normally expects an email address, so app/routes/auth.py
+    maps the typed value 'admin' to this stored email: admin@demo.com.
     """
     password_hash = generate_password_hash("admin123")
+    user = _find_demo_admin_user()
 
-    existing_user = _find_demo_admin_user()
-
-    if existing_user is None:
-        demo_user = User()
-
-        _set_if_column(demo_user, ["username", "user_name", "userid", "user_id", "login_id"], "admin")
-        _set_if_column(demo_user, ["email"], "admin")
-        _set_if_column(demo_user, ["name", "full_name", "display_name"], "admin")
-        _set_if_column(demo_user, ["password_hash", "password"], password_hash)
-        _set_if_column(demo_user, ["role"], "admin")
-        _set_if_column(demo_user, ["department"], "Admin")
-        _set_if_column(demo_user, ["is_admin"], True)
-        _set_if_column(demo_user, ["is_approved"], True)
-        _set_if_column(demo_user, ["active", "is_active"], True)
-        _set_if_column(demo_user, ["approved"], True)
-        _set_if_column(demo_user, ["status"], "active")
-
-        db.session.add(demo_user)
+    if user is None:
+        user = User(
+            email="admin@demo.com",
+            password=password_hash,
+            role="admin",
+        )
+        db.session.add(user)
         db.session.commit()
-        return demo_user
+        return user
 
-    _set_if_column(existing_user, ["username", "user_name", "userid", "user_id", "login_id"], "admin")
-    _set_if_column(existing_user, ["email"], "admin")
-    _set_if_column(existing_user, ["name", "full_name", "display_name"], "admin")
-    _set_if_column(existing_user, ["password_hash", "password"], password_hash)
-    _set_if_column(existing_user, ["role"], "admin")
-    _set_if_column(existing_user, ["department"], "Admin")
-    _set_if_column(existing_user, ["is_admin"], True)
-    _set_if_column(existing_user, ["is_approved"], True)
-    _set_if_column(existing_user, ["active", "is_active"], True)
-    _set_if_column(existing_user, ["approved"], True)
-    _set_if_column(existing_user, ["status"], "active")
-
+    # Keep demo credentials correct on every cold start/redeploy.
+    user.email = "admin@demo.com"
+    user.password = password_hash
+    user.role = "admin"
     db.session.commit()
-    return existing_user
-
+    return user
 
 def create_app(config_class=Config):
     """Creates and configures the Flask app."""
@@ -299,6 +267,27 @@ def create_app(config_class=Config):
             return redirect(url_for("reports.dashboard"))
         except Exception:
             return redirect("/")
+
+    # ---------------------------------------------------------------------
+    # Demo-login diagnostic route
+    # ---------------------------------------------------------------------
+    @app.route("/demo-login-status")
+    def demo_login_status():
+        if not is_vercel_demo:
+            return Response("Demo mode is not enabled.", status=400, mimetype="text/plain")
+
+        try:
+            user = _find_demo_admin_user()
+            return {
+                "demo_mode": True,
+                "user_found": bool(user),
+                "user_id": getattr(user, "id", None) if user else None,
+                "email": getattr(user, "email", None) if user else None,
+                "role": getattr(user, "role", None) if user else None,
+                "current_user_authenticated": bool(current_user.is_authenticated),
+            }
+        except Exception as exc:
+            return {"demo_mode": True, "error": str(exc)}, 500
 
     # ✅ ---------------- CRM DASHBOARD ROUTE ----------------
     @app.route("/CRM_Records")
