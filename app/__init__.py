@@ -49,9 +49,33 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    # Create the PostgreSQL database first if it does not exist. This uses the
-    # maintenance database configured in config.py, defaulting to postgres.
-    ensure_postgres_database(app)
+    # ---------------------------------------------------------------------
+    # Vercel demo mode database fix
+    # ---------------------------------------------------------------------
+    # On local/server deployment:
+    # - Keep your existing PostgreSQL behavior unchanged.
+    #
+    # On Vercel:
+    # - Do not connect to internal PostgreSQL server.
+    # - Use temporary SQLite database inside /tmp.
+    # ---------------------------------------------------------------------
+    is_vercel_demo = bool(
+        os.environ.get("VERCEL") or os.environ.get("WATER_QUALITY_DEMO_MODE")
+    )
+
+    if is_vercel_demo:
+        demo_db_uri = os.environ.get(
+            "SQLALCHEMY_DATABASE_URI",
+            os.environ.get("DATABASE_URL", "sqlite:////tmp/water_quality_demo.db")
+        )
+
+        app.config["SQLALCHEMY_DATABASE_URI"] = demo_db_uri
+        app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+        app.config.setdefault("SECRET_KEY", os.environ.get("SECRET_KEY", "water-quality-demo-secret-key"))
+    else:
+        # Create the PostgreSQL database first if it does not exist. This uses the
+        # maintenance database configured in config.py, defaulting to postgres.
+        ensure_postgres_database(app)
 
     # ✅ Prevent Flask from collapsing double-slashes in proxied URLs
     app.url_map.merge_slashes = False
@@ -70,7 +94,11 @@ def create_app(config_class=Config):
 
     # Create missing tables and performance indexes if they do not already exist.
     # This is non-destructive and will not delete existing PostgreSQL data.
-    create_missing_tables(app, db)
+    if is_vercel_demo:
+        with app.app_context():
+            db.create_all()
+    else:
+        create_missing_tables(app, db)
 
     # CLI commands
     from . import cli
