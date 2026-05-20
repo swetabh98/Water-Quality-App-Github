@@ -1,0 +1,28 @@
+app\routes\admin.py:7:admin_bp = Blueprint('admin', __name__)
+app\routes\analytics.py:9:analytics_bp = Blueprint("analytics", __name__)
+app\routes\auth.py:8:auth_bp = Blueprint('auth', __name__)
+app\routes\power_plant_reports.py:10:power_plant_reports_bp = Blueprint("power_plant_reports", __name__)
+app\routes\rail_mill_reports.py:14:rail_mill_reports_bp = Blueprint('rail_mill_reports', __name__)
+app\routes\reports.py:22:reports_bp = Blueprint('reports', __name__)
+app\routes\sms2_reports.py:14:sms2_reports_bp = Blueprint('sms2_reports', __name__)
+app\routes\sms3_reports.py:16:sms3_reports_bp = Blueprint('sms3_reports', __name__)
+app\routes\spm_reports.py:14:spm_reports_bp = Blueprint('spm_reports', __name__)
+app\__init__.py:48:    app.register_blueprint(auth_bp)
+app\__init__.py:49:    app.register_blueprint(reports_bp)
+app\__init__.py:50:    app.register_blueprint(analytics_bp)
+app\__init__.py:51:    app.register_blueprint(admin_bp)
+app\__init__.py:52:    app.register_blueprint(sms2_reports_bp)
+app\__init__.py:53:    app.register_blueprint(sms3_reports_bp)
+app\__init__.py:54:    app.register_blueprint(rail_mill_reports_bp)
+app\__init__.py:55:    app.register_blueprint(spm_reports_bp)  # ✅ SPM blueprint registration
+app\__init__.py:56:    app.register_blueprint(power_plant_reports_bp)  # ✅ ADD THIS
+venv\Lib\site-packages\flask\app.py:972:    def register_blueprint(self, blueprint: Blueprint, **options: t.Any) -> None:
+venv\Lib\site-packages\flask\blueprints.py:119:class Blueprint(Scaffold):
+venv\Lib\site-packages\flask\blueprints.py:256:    def register_blueprint(self, blueprint: Blueprint, **options: t.Any) -> None:
+venv\Lib\site-packages\flask\wrappers.py:78:    def blueprint(self) -> str | None:
+venv\Lib\site-packages\flask_wtf\csrf.py:289:            bp = Blueprint(...)
+venv_311\Lib\site-packages\flask\app.py:972:    def register_blueprint(self, blueprint: Blueprint, **options: t.Any) -> None:
+venv_311\Lib\site-packages\flask\blueprints.py:119:class Blueprint(Scaffold):
+venv_311\Lib\site-packages\flask\blueprints.py:256:    def register_blueprint(self, blueprint: Blueprint, **options: t.Any) -> None:
+venv_311\Lib\site-packages\flask\wrappers.py:78:    def blueprint(self) -> str | None:
+venv_311\Lib\site-packages\flask_wtf\csrf.py:289:            bp = Blueprint(...)

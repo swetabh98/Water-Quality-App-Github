@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CRM Milestone Performance Dashboard</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CRM dashboard CSS -->
+    <link rel="stylesheet" href="{{ url_for('crm_dashboard_assets', filename='css/style.css') }}?v=20260504_2">
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<div class="page-shell">
+
+    <!-- HERO HEADER -->
+    <header class="hero">
+        <div class="hero-left">
+            <div class="eyebrow">CRM @ Jindal Steel, Angul</div>
+            <h1>New Milestones Performance Dashboard</h1>
+            <p>
+                Live dashboard connected with Google Sheets. Tracks April 2026 milestone achievements,
+                previous benchmark comparison, rise percentage, frequency-wise performance, and top performers.
+            </p>
+        </div>
+
+        <div class="hero-right">
+            <div class="live-pill">
+                <span class="pulse"></span>
+                Live Google Sheet Data
+            </div>
+            <div class="updated-text">
+                Last updated: <span id="lastUpdated">--</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- KPI CARDS -->
+    <section class="kpi-grid">
+        <div class="kpi-card primary">
+            <div class="kpi-label">Total New Milestone</div>
+            <div class="kpi-value" id="totalNew">--</div>
+            <div class="kpi-sub">April 2026 total achievement</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">Previous Milestone</div>
+            <div class="kpi-value" id="totalPrevious">--</div>
+            <div class="kpi-sub">Previous benchmark total</div>
+        </div>
+
+        <div class="kpi-card success">
+            <div class="kpi-label">Total Gain</div>
+            <div class="kpi-value" id="totalGain">--</div>
+            <div class="kpi-sub">New minus previous milestone</div>
+        </div>
+
+        <div class="kpi-card accent">
+            <div class="kpi-label">Average Rise</div>
+            <div class="kpi-value" id="avgRise">--</div>
+            <div class="kpi-sub">Average improvement percentage</div>
+        </div>
+    </section>
+
+    <!-- HIGHLIGHTS -->
+    <section class="highlight-grid">
+        <div class="highlight-card">
+            <div class="highlight-icon">🏆</div>
+            <div>
+                <div class="highlight-label">Best Rise</div>
+                <div class="highlight-value" id="bestRise">--</div>
+            </div>
+        </div>
+
+        <div class="highlight-card">
+            <div class="highlight-icon">📈</div>
+            <div>
+                <div class="highlight-label">Highest Volume</div>
+                <div class="highlight-value" id="bestVolume">--</div>
+            </div>
+        </div>
+
+        <div class="highlight-card">
+            <div class="highlight-icon">📊</div>
+            <div>
+                <div class="highlight-label">Total Records</div>
+                <div class="highlight-value" id="recordCount">--</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN STORY CHART -->
+    <section class="chart-card hero-chart-card">
+        <div class="chart-header">
+            <div>
+                <h2>New vs Previous Milestones</h2>
+                <p>Main comparison across all CRM lines and units</p>
+            </div>
+            <span class="tag">Primary View</span>
+        </div>
+        <div class="chart-box large">
+            <canvas id="comparisonChart"></canvas>
+        </div>
+    </section>
+
+    <!-- CHART GRID -->
+    <section class="dashboard-grid">
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <h2>Rise % by Line</h2>
+                    <p>Improvement percentage for each milestone</p>
+                </div>
+            </div>
+            <div class="chart-box">
+                <canvas id="riseChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <h2>Gain by Line</h2>
+                    <p>Absolute improvement over previous milestone</p>
+                </div>
+            </div>
+            <div class="chart-box">
+                <canvas id="gainChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <h2>Frequency-wise New Milestones</h2>
+                    <p>Shift, Day and Month contribution</p>
+                </div>
+            </div>
+            <div class="chart-box">
+                <canvas id="frequencyBarChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <h2>Frequency Share</h2>
+                    <p>Contribution share by milestone frequency</p>
+                </div>
+            </div>
+            <div class="chart-box">
+                <canvas id="frequencyDoughnutChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <h2>Top 5 by Volume</h2>
+                    <p>Highest new milestone values</p>
+                </div>
+            </div>
+            <div class="chart-box">
+                <canvas id="topVolumeChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <h2>Top 5 by Rise %</h2>
+                    <p>Highest percentage improvement</p>
+                </div>
+            </div>
+            <div class="chart-box">
+                <canvas id="topRiseChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <h2>Line-wise Total Performance</h2>
+                    <p>Grouped milestone total by line</p>
+                </div>
+            </div>
+            <div class="chart-box">
+                <canvas id="lineTotalChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <h2>New Milestone Trend</h2>
+                    <p>Sequential milestone movement</p>
+                </div>
+            </div>
+            <div class="chart-box">
+                <canvas id="newTrendChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <h2>Previous vs New Area View</h2>
+                    <p>Filled comparison view</p>
+                </div>
+            </div>
+            <div class="chart-box">
+                <canvas id="areaChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <h2>Performance Ratio</h2>
+                    <p>New milestone divided by previous milestone</p>
+                </div>
+            </div>
+            <div class="chart-box">
+                <canvas id="ratioChart"></canvas>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- DATA TABLE -->
+    <section class="table-card">
+        <div class="chart-header">
+            <div>
+                <h2>Milestone Records</h2>
+                <p>Sorted live records from Google Sheet</p>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>SN</th>
+                        <th>Line</th>
+                        <th>Frequency</th>
+                        <th>Unit</th>
+                        <th>New</th>
+                        <th>Previous</th>
+                        <th>Gain</th>
+                        <th>Rise %</th>
+                    </tr>
+                </thead>
+                <tbody id="recordsTable">
+                    <tr>
+                        <td colspan="8">Loading records...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</div>
+
+<!-- CRM dashboard JS -->
+<script src="{{ url_for('crm_dashboard_assets', filename='js/dashboard.js') }}?v=20260504_2"></script>
+
+</body>
+</html>

@@ -1,0 +1,29 @@
+<div style="overflow-x: auto;" class="w-100">
+    <table class="table table-bordered text-center align-middle small w-100">
+        <thead class="table-primary">
+            <tr>
+                <th class="bg-secondary text-white">System</th>
+                <th>pH<br><small>-</small></th><th>TH<br><small>ppm as CaCO3</small></th><th>P-Alk<br><small>ppm as CaCO3</small></th>
+                <th>M-Alk<br><small>ppm as CaCO3</small></th><th>Chloride<br><small>ppm</small></th><th>Conductivity<br><small>µS/cm</small></th>
+                <th>Turbidity<br><small>NTU</small></th><th>TSS<br><small>ppm</small></th><th>Nitrite<br><small>ppm as NO2-</small></th>
+                <th>Iron<br><small>ppm</small></th><th>TDS<br><small>= Cond × 0.65</small></th><th>TBC<br><small>CFU/ml</small></th><th>SRB<br><small>Counts/100ml</small></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set systems = [ ('SOFT WATER', ['-', '<20', 'as per pH', 'as per pH', '<50', '<600', '<20', '<20', '150-200', '<1', '<300', '<100000', '<100']), ('COMBI CASTER', ['8.0-9.0', '<20', 'as per pH', 'as per pH', '<50', '<600', '<20', '<20', '150-200', '<1', '<300', '<100000', '<100']), ('BILLET&SLAB MACHINE', ['7.0-9.5', '<10', 'as per pH', 'as per pH', '<100', '<750', '<20', '<20', '250-300', '<1', '<400', '<100000', '<100']), ('SLAB MOULD', ['8.5-9.5', '<10', 'as per pH', 'as per pH', '<50', '<1000', '<10', '<10', '250-300', '<1', '<300', '<100000', '<100']), ('LRF # 1', ['8.5-9.5', '<10', 'as per pH', 'as per pH', '<50', '<1000', '<10', '<10', '250-300', '<1', '<300', '<100000', '<100']), ('LRF # 2 AND 3', ['8.5-9.5', '<10', 'as per pH', 'as per pH', '<50', '<1000', '<10', '<10', '250-300', '<1', '<300', '<100000', '<100']), ('EAF#1', ['8.5-9.5', '<10', 'as per pH', 'as per pH', '<50', '<1000', '<20', '<20', '250-300', '<0.1', '<600', '<100000', '<100']), ('EAF#2', ['8.5-9.F5', '<10', 'as per pH', 'as per pH', '<50', '<1000', '<20', '<20', '250-300', '<0.1', '<600', '<100000', '<100']), ('FES', ['8.5-9.5', '<10', 'as per pH', 'as per pH', '<50', '<1000', '<20', '<20', '250-300', '<0.1', '<600', '<100000', '<100']) ] %}
+            {% set p_keys = ['pH', 'TH', 'P-Alk', 'M-Alk', 'Chloride', 'Conductivity', 'Turbidity', 'TSS', 'Nitrite', 'Iron', 'TDS', 'TBC', 'SRB'] %}
+            {% for system_name, ranges in systems %}
+            <tr class="table-light">
+                <td><strong>{{ system_name }}</strong><br><small>Range</small></td>
+                {% for r in ranges %}<td><small>{{ r }}</small></td>{% endfor %}
+            </tr>
+            <tr>
+                <td><strong>{{ system_name }}</strong><br><small>Actual</small></td>
+                {% for p_key in p_keys %}
+                <td>{{ params.get('ccm_eaf_' + system_name|urlencode + '_' + p_key, '-') }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

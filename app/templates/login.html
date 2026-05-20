@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<!-- Background wrapper (new) -->
+<div style="
+    min-height:100vh;
+    background:
+      linear-gradient(rgba(0,0,0,.25), rgba(0,0,0,.25)),
+      url('{{ url_for('static', filename='images/Jindal_Centre_Raigarh.png') }}') center / cover no-repeat fixed;
+">
+  <div class="container d-flex justify-content-center align-items-center" style="min-height: 90vh;">
+      <div class="card shadow p-5" style="max-width: 450px; width: 100%; border-top: 5px solid #f47920;">
+          <div class="text-center mb-4">
+              <img src="{{ url_for('static', filename='images/jindal_steel_logo.png') }}" alt="Jindal Steel" style="height: 60px;">
+              <h4 class="mt-2 text-primary" style="color: #002b5c !important;">Jindal Steel</h4>
+              <h5 class="text-secondary">Water Quality Portal</h5>
+          </div>
+
+          <h5 class="mb-4 text-center">Login</h5>
+
+          <form method="POST">
+              {{ form.hidden_tag() }}
+
+              <div class="mb-3">
+                  {{ form.email.label(class="form-label") }}
+                  {{ form.email(class_="form-control", placeholder="Enter your email") }}
+              </div>
+
+              <div class="mb-3">
+                  {{ form.password.label(class="form-label") }}
+                  {{ form.password(class_="form-control", placeholder="Enter your password") }}
+              </div>
+
+              <div class="d-grid">
+                  <button type="submit" class="btn" style="background-color: #002b5c; color: white;">Login</button>
+              </div>
+          </form>
+
+          <div class="text-center mt-3">
+              <p>Don't have an account? <a href="{{ url_for('auth.register') }}" style="color: #f47920;">Register here</a></p>
+          </div>
+      </div>
+  </div>
+</div>
+{% endblock %}

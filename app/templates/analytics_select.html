@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Select Department{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 p-4">
+                <h3 class="mb-4 text-center fw-bold" >Select Department for Analytics</h3>
+
+                <form method="POST">
+                    <div class="form-group mb-3">
+                        <label for="department" class="form-label fw-semibold">Department</label>
+                        <select name="department" id="department" class="form-select" required>
+                            <option disabled selected value="">-- Select Department --</option>
+                            {% for dept in departments %}
+                                <option value="{{ dept.id }}">
+                                    {% if "plate" in dept.name.lower() and "mill" in dept.name.lower() %}
+                                        Plate Mill
+                                    {% else %}
+                                        {{ dept.name }}
+                                    {% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary px-4 py-2 fw-semibold text-white">📊 View Analytics</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

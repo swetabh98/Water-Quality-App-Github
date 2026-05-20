@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}Plate Mill Report{% endblock %}
+{% block content %}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4 px-1 py-3" style="background-color: #003B70; color: white; border-radius: 6px;">
+        <h4 class="text-center flex-grow-1 m-0 fw-bold">PERSONAL SERVICE REPORT - PLATE MILL DIVISION</h4>
+        <div class="text-end small" style="width: 180px;">
+            Date: {{ sampling_time.strftime('%d.%m.%Y') }}
+        </div>
+    </div>
+
+    <form method="POST">
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle text-center shadow-sm">
+                <thead style="background-color: #003B70; color: white;">
+                    <tr>
+                        <th rowspan="2" style="vertical-align: middle;">Parameter</th>
+                        <th rowspan="2" style="vertical-align: middle;">Unit</th>
+                        <th colspan="3">Makeup Water</th>
+                        <th colspan="3">DCW</th>
+                        <th colspan="2">FCW</th>
+                        <th colspan="2">ICW</th>
+                        <th colspan="2">RHF Softwater</th>
+                    </tr>
+                    <tr>
+                        <th>Limit Pond 07</th><th>Pond-7 Actual</th><th>Makeup Tank</th>
+                        <th>Limit</th><th>DCW Actual</th><th>ACC Actual</th>
+                        <th>Limit</th><th>Actual</th>
+                        <th>Limit</th><th>Actual</th>
+                        <th>Limit</th><th>Actual</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set data = { 'pH': ['7.2to 7.8', '', '', '7.8to 8.5', '', '', '7.8to 8.1', '', '7.8to 8.1', '', '8.0to 9.5', ''], 'Conductivity': ['<450', '', '', '<460', '', '', '<6000', '', '<460', '', '<460', ''], 'TDS': ['<290', '', '', '<300', '', '', '<4000', '', '<300', '', '<300', ''], 'TH': ['<120', '', '', '<500', '', '', '<1700', '', '<350', '', '<10', ''], 'Ca-H': ['<72', '', '', '<330', '', '', '<1250', '', '<230', '', '<6', ''], 'Mg-H': ['<48', '', '', '<170', '', '', '<450', '', '<200', '', '<4', ''], 'Chloride': ['<50', '', '', '<300', '', '', '<1200', '', '<120', '', '<50', ''], 'P-Alkalinity': ['NIL', '', '', 'As per pH', '', '', 'NIL', '', 'NIL', '', 'As per pH', ''], 'M-Alkalinity': ['<120', '', '', 'As per pH', '', '', 'As per pH', '', 'As per pH', '', 'As per pH', ''], 'Silica': ['<15', '', '', '<50', '', '', '<100', '', '<50', '', '<20', ''], 'O-Phosphate': ['NA', '', '', '2to3', '', '', '0.5to1.0', '', '2to3', '', 'NA', ''], 'TSS': ['NIL', '', '', '<20', '', '', '<10', '', '<10', '', 'NA', ''], 'Turbidity': ['<10', '', '', '<25', '', '', '<15', '', '<15', '', '<10', ''], 'Iron': ['<0.1', '', '', '<1.0', '', '', '<1.0', '', '<1.0', '', '<0.5', ''], 'NITRITE': ['NA', '', '', 'NA', '', '', 'NA', '', 'NA', '', '200 to 300', ''], 'COC': ['NA', '', '', '2.5to3.0', '', '', '6to7', '', '2.5to3.3', '', 'NA', ''] } %}
+                    {% set units = { 'pH': '', 'Conductivity': 'µS/cm', 'TDS': 'ppm', 'TH': 'ppm as CaCO3', 'Ca-H': 'ppm as CaCO3', 'Mg-H': 'ppm as CaCO3', 'Chloride': 'ppm as CaCO3', 'P-Alkalinity': 'ppm as CaCO3', 'M-Alkalinity': 'ppm as CaCO3', 'Silica': 'ppm as sio2', 'O-Phosphate': 'ppm as po4', 'TSS': 'ppm', 'Turbidity': 'NTU', 'Iron': 'ppm as Fe+2', 'NITRITE': 'PPM', 'COC': '' } %}
+
+                    {% for param, info in data.items() %}
+                    <tr style="background-color: {% if loop.index % 2 == 0 %}#ffffff{% else %}#F9FAFC{% endif %};">
+                        <td style="background-color: #F1F1F1;" class="fw-semibold">{{ param }}</td>
+                        <td style="background-color: #F1F1F1;">{{ units[param] }}</td>
+
+                        <td>
+                            {{ info[0] }}
+                            <input type="hidden" name="POND07_LIMIT_{{ param }}_range" value="{{ info[0] }}">
+                        </td>
+                        <td><input type="text" name="POND07_ACTUAL_{{ param }}_value" class="form-control bg-white"></td>
+                        <td><input type="text" name="MAKEUP_TANK_{{ param }}_value" class="form-control bg-white"></td>
+
+                        <td>
+                            {{ info[3] }}
+                            <input type="hidden" name="DCW_LIMIT_{{ param }}_range" value="{{ info[3] }}">
+                        </td>
+                        <td><input type="text" name="DCW_ACTUAL_{{ param }}_value" class="form-control bg-white"></td>
+                        <td><input type="text" name="ACC_ACTUAL_{{ param }}_value" class="form-control bg-white"></td>
+
+                        <td>
+                            {{ info[6] }}
+                            <input type="hidden" name="FCW_LIMIT_{{ param }}_range" value="{{ info[6] }}">
+                        </td>
+                        <td><input type="text" name="FCW_ACTUAL_{{ param }}_value" class="form-control bg-white"></td>
+
+                        <td>
+                            {{ info[8] }}
+                            <input type="hidden" name="ICW_LIMIT_{{ param }}_range" value="{{ info[8] }}">
+                        </td>
+                        <td><input type="text" name="ICW_ACTUAL_{{ param }}_value" class="form-control bg-white"></td>
+
+                        <td>
+                            {{ info[10] }}
+                            <input type="hidden" name="RHF_LIMIT_{{ param }}_range" value="{{ info[10] }}">
+                        </td>
+                        <td><input type="text" name="RHF_ACTUAL_{{ param }}_value" class="form-control bg-white"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-end mt-3">
+            <button type="submit" class="btn px-4 py-2 shadow-sm" style="background-color:#F26522; color:white;">Submit Report</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

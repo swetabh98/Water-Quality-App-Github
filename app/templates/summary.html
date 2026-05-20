@@ -1,0 +1,237 @@
+{% extends "base.html" %} {% block title %}Summary{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-success text-white">
+            <h3 class="mb-0">📑 Report Summary</h3>
+        </div>
+        <div class="card-body"><h5 class="text-jindal fw-bold">Plate Mill Reports</h5>
+        {% if plate_mill %}
+        <div class="table-responsive mb-5">
+            <table class="table table-bordered align-middle table-hover">
+                <thead class="table-success text-center">
+                    <tr>
+                        <th>ID</th><th>Department</th><th>User</th><th>Date</th><th style="min-width: 220px;">Actions</th>
+                        {% for param in parameters %}<th>{{ param }}</th>{% endfor %}
+                    </tr>
+                </thead>
+                <tbody class="table-light">
+                    {% for report in plate_mill %}
+                    <tr>
+                        <td>{{ report.ID }}</td><td>{{ report.Department }}</td><td>{{ report.User }}</td><td>{{ report.Date }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('reports.view_report', report_id=report.ID) }}" class="btn btn-sm btn-info text-white mb-1">View</a>
+                            <a href="{{ url_for('reports.edit_report', report_id=report.ID) }}" class="btn btn-sm btn-secondary mb-1">Edit</a>
+                            <form action="{{ url_for('reports.delete_report', report_id=report.ID) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure?');">
+                                <button type="submit" class="btn btn-sm btn-danger mb-1">Delete</button>
+                            </form>
+                        </td>
+                        {% for param in parameters %}<td class="text-center">{{ report.get(param, "-") }}</td>{% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}<p class="text-muted">No Plate Mill reports found.</p>{% endif %}
+
+        <h5 class="text-primary fw-bold">SMS-2 Reports</h5>
+        {% if sms2_reports %}
+        <div class="table-responsive mb-5">
+            <table class="table table-bordered align-middle table-hover">
+                <thead class="table-primary text-center">
+                    <tr>
+                        <th>ID</th><th>Department</th><th>User</th><th>Date</th><th style="min-width: 220px;">Actions</th>
+                        {% for param in sms2_params %}<th>{{ param }}</th>{% endfor %}
+                    </tr>
+                </thead>
+                <tbody class="table-light">
+                    {% for report in sms2_reports %}
+                    <tr>
+                        <td>{{ report.ID }}</td><td>{{ report.Department }}</td><td>{{ report.User }}</td><td>{{ report.Date }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('sms2_reports.view_report_sms2', report_id=report.ID) }}" class="btn btn-sm btn-info text-white mb-1">View</a>
+                            <a href="{{ url_for('sms2_reports.edit_report_sms2', report_id=report.ID) }}" class="btn btn-sm btn-secondary mb-1">Edit</a>
+                            <form action="{{ url_for('sms2_reports.delete_report_sms2', report_id=report.ID) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure?');">
+                                <button type="submit" class="btn btn-sm btn-danger mb-1">Delete</button>
+                            </form>
+                        </td>
+                        {% for param in sms2_params %}<td class="text-center">{{ report.get(param, "-") }}</td>{% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}<p class="text-muted">No SMS-2 reports found.</p>{% endif %}
+
+        <h5 class="text-info fw-bold">SMS-3 Reports</h5>
+        {% if sms3_reports %}
+        <div class="table-responsive mb-5">
+            <table class="table table-bordered align-middle table-hover">
+                <thead class="table-info text-center">
+                    <tr>
+                        <th>ID</th>
+                        <th>Department</th>
+                        <th>User</th>
+                        <th>Date</th>
+                        <th style="min-width: 220px;">Actions</th>
+                        {% for param in sms3_params %}
+                            <th>{{ param }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in sms3_reports %}
+                    <tr>
+                        <td>{{ report.ID }}</td>
+                        <td>{{ report.Department }}</td>
+                        <td>{{ report.User }}</td>
+                        <td>{{ report.Date }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('sms3_reports.view_report_sms3', report_id=report.ID) }}" class="btn btn-sm btn-info text-white mb-1">View</a>
+                            <a href="{{ url_for('sms3_reports.edit_report_sms3', report_id=report.ID) }}" class="btn btn-sm btn-secondary mb-1">Edit</a>
+                            <form action="{{ url_for('sms3_reports.delete_report_sms3', report_id=report.ID) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure?');">
+                                <button type="submit" class="btn btn-sm btn-danger mb-1">Delete</button>
+                            </form>
+                        </td>
+                        {% for param in sms3_params %}
+                            <td class="text-center">{{ report.get(param, "-") }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}<p class="text-muted">No SMS-3 reports found.</p>{% endif %}
+
+        <h5 class="fw-bold" style="color: #6610f2;">Rail Mill Reports</h5>
+        {% if rail_mill_reports %}
+        <div class="table-responsive mb-5">
+            <table class="table table-bordered align-middle table-hover">
+                <thead class="text-center" style="background-color: #d6bbfb; color: #3d0a82;">
+                    <tr>
+                        <th>ID</th>
+                        <th>Department</th>
+                        <th>User</th>
+                        <th>Date</th>
+                        <th style="min-width: 220px;">Actions</th>
+                        {% for param in rail_mill_params %}
+                            <th>{{ param }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in rail_mill_reports %}
+                    <tr>
+                        <td>{{ report.ID }}</td>
+                        <td>{{ report.Department }}</td>
+                        <td>{{ report.User }}</td>
+                        <td>{{ report.Date }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('rail_mill_reports.view_report_rail_mill', report_id=report.ID) }}" class="btn btn-sm btn-info text-white mb-1">View</a>
+                            <a href="{{ url_for('rail_mill_reports.edit_report_rail_mill', report_id=report.ID) }}" class="btn btn-sm btn-secondary mb-1">Edit</a>
+                            <form action="{{ url_for('rail_mill_reports.delete_report_rail_mill', report_id=report.ID) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure?');">
+                                <button type="submit" class="btn btn-sm btn-danger mb-1">Delete</button>
+                            </form>
+                        </td>
+                        {% for param in rail_mill_params %}
+                            <td class="text-center">{{ report.get(param, "-") }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p class="text-muted">No Rail Mill reports found.</p>
+        {% endif %}
+
+        <h5 class="text-danger fw-bold">SPM Reports</h5>
+        {% if spm_reports %}
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle table-hover">
+                <thead class="text-center table-danger">
+                    <tr>
+                        <th>ID</th>
+                        <th>Department</th>
+                        <th>User</th>
+                        <th>Date</th>
+                        <th style="min-width: 220px;">Actions</th>
+                        {% for param in rail_mill_params %}
+                            <th>{{ param }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in spm_reports %}
+                    <tr>
+                        <td>{{ report.ID }}</td>
+                        <td>{{ report.Department }}</td>
+                        <td>{{ report.User }}</td>
+                        <td>{{ report.Date }}</td>
+                        <td class="text-center">
+                            <a href="{{ url_for('spm_reports.view_report_spm', report_id=report.ID) }}" class="btn btn-sm btn-info text-white mb-1">View</a>
+                            <a href="{{ url_for('spm_reports.edit_report_spm', report_id=report.ID) }}" class="btn btn-sm btn-secondary mb-1">Edit</a>
+                            <form action="{{ url_for('spm_reports.delete_report_spm', report_id=report.ID) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure?');">
+                                <button type="submit" class="btn btn-sm btn-danger mb-1">Delete</button>
+                            </form>
+                        </td>
+                        {% for param in rail_mill_params %}
+                            <td class="text-center">{{ report.get(param, "-") }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p class="text-muted">No SPM reports found.</p>
+        {% endif %}
+            <h5 class="text-warning fw-bold">Power Plant Reports</h5>
+{% if power_plant_reports %}
+<div class="table-responsive">
+    <table class="table table-bordered align-middle table-hover">
+        <thead class="text-center table-warning">
+            <tr>
+                <th>ID</th>
+                <th>Department</th>
+                <th>User</th>
+                <th>Date</th>
+                <th style="min-width: 220px;">Actions</th>
+                {% for param in power_plant_params %}
+                    <th>{{ param }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in power_plant_reports %}
+            <tr>
+                <td>{{ report.ID }}</td>
+                <td>{{ report.Department }}</td>
+                <td>{{ report.User }}</td>
+                <td>{{ report.Date }}</td>
+                <td class="text-center">
+                    <a href="{{ url_for('power_plant_reports.view_report_power_plant', report_id=report.ID) }}" class="btn btn-sm btn-info text-white mb-1">View</a>
+                    <a href="{{ url_for('power_plant_reports.edit_report_power_plant', report_id=report.ID) }}" class="btn btn-sm btn-secondary mb-1">Edit</a>
+                    <form action="{{ url_for('power_plant_reports.delete_report_power_plant', report_id=report.ID) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure?');">
+                        <button type="submit" class="btn btn-sm btn-danger mb-1">Delete</button>
+                    </form>
+                </td>
+                {% for param in power_plant_params %}
+                    <td class="text-center">{{ report.get(param, "-") }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="text-muted">No Power Plant reports found.</p>
+{% endif %}
+
+    </div>
+</div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Report Details - ID: {{ report.id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary fw-bold">Report ID: {{ report.id }}</h2>
+        
+        <a href="{% if report.department.name == 'SMS-2' %}{{ url_for('sms2_reports.download_pdf_sms2', report_id=report.id) }}{% else %}{{ url_for('reports.download_pdf', report_id=report.id) }}{% endif %}" class="btn btn-success btn-lg" target="_blank">
+            Download PDF
+        </a>
+    </div>
+
+    <div class="card shadow-sm mb-4 border-0">
+        <div class="card-body bg-light border-start border-5 border-success">
+            <h5 class="text-secondary">Report Metadata</h5>
+            <hr>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Department:</strong> {{ report.department.name }}</p>
+                    <p><strong>Equipment:</strong> {{ report.equipment.name if report.equipment else 'N/A' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Submitted By:</strong> {{ report.user.email }}</p>
+                    <p><strong>Sample Time:</strong> {{ report.sampling_time.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% for section in report.sections %}
+    <div class="card mb-4 shadow-sm border-0">
+        <div class="card-header bg-jindal text-white">
+            <h5 class="mb-0">{{ section.sheet_name }}</h5>
+        </div>
+        <div class="card-body table-responsive p-0">
+            {% if section.sheet_name == 'Plate Mill Report' %}
+                {% include 'view_report_tabs/plate_mill_view.html' %}
+            {% elif section.sheet_name == 'ICW & DCW Raw Water' %}
+                {% include 'view_report_tabs/icw_dcw_view.html' %}
+            {% elif section.sheet_name == 'CCM & EAF SW' %}
+                {% include 'view_report_tabs/ccm_eaf_view.html' %}
+            {% elif section.sheet_name == 'Softwater Make-up' %}
+                 {% include 'view_report_tabs/softwater_makeup_view.html' %}
+            {% elif section.sheet_name == 'Spray O&G' %}
+                {% include 'view_report_tabs/spray_og_view.html' %}
+            {% elif section.sheet_name == 'HRSCC Report' %}
+                {% include 'view_report_tabs/hrscc_report_view.html' %}
+            {% elif section.sheet_name == 'Water Balance Sheet' %}
+                {% include 'view_report_tabs/water_balance_view.html' %}
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+    .bg-jindal { background-color: #006747; }
+</style>
+{% endblock %}

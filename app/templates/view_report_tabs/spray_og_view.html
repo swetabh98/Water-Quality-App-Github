@@ -1,0 +1,18 @@
+{% set headers = [ 'SL No', 'Date', 'Sample Point', 'Limit (PPM)', 'Oil & Grease (PPM) - Slab', 'Oil & Grease (PPM) - BL & COMBI', 'Nozzle Choking - Slab', 'Nozzle Choking - Billet', 'Nozzle Choking - Combi' ] %}
+{% set keys = [ 'SL_No', 'Date', 'Sample_Point', 'Limit', 'Oil_Slab', 'Oil_BL_COMBI', 'Nozzle_Slab', 'Nozzle_Billet', 'Nozzle_Combi' ] %}
+<table class="table table-bordered text-center align-middle">
+    <thead class="table-light">
+        <tr>
+            {% for h in headers %}<th>{{ h }}</th>{% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in range(8) %}
+        <tr>
+            {% for key in keys %}
+            <td>{{ params.get('spray_og_' + key + '_' + i|string, '-') }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

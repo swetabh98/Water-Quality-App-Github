@@ -1,0 +1,30 @@
+<table class="table table-bordered text-center align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Date</th>
+            <th>Combi</th>
+            <th>Billet N Slab Machine</th>
+            <th>LRF 1</th>
+            <th>LRF 2&3</th>
+            <th>EAF-1</th>
+            <th>EAF-2</th>
+            <th>FES</th>
+            <th>SLAB CASTER</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in range(5) %}
+        <tr>
+            <td>{{ params.get('softwater_makeup_Date_' + i|string, '-') }}</td>
+            <td>{{ params.get('softwater_makeup_Combi_' + i|string, '-') }}</td>
+            <td>{{ params.get('softwater_makeup_Billet_Slab_' + i|string, '-') }}</td>
+            <td>{{ params.get('softwater_makeup_LRF1_' + i|string, '-') }}</td>
+            <td>{{ params.get('softwater_makeup_LRF2_3_' + i|string, '-') }}</td>
+            <td>{{ params.get('softwater_makeup_EAF-1_' + i|string, '-') }}</td>
+            <td>{{ params.get('softwater_makeup_EAF-2_' + i|string, '-') }}</td>
+            <td>{{ params.get('softwater_makeup_FES_' + i|string, '-') }}</td>
+            <td>{{ params.get('softwater_makeup_Slab_Caster_' + i|string, '-') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

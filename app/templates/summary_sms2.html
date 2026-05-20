@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}SMS-2 Report Summary{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">📑 SMS-2 Report Summary</h3>
+        </div>
+        <div class="card-body">
+            {% if reports %}
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle table-hover">
+                    <thead class="table-primary text-center">
+                        <tr>
+                            <th>ID</th>
+                            <th>Department</th>
+                            <th>Equipment</th>
+                            <th>User</th>
+                            <th>Date</th>
+                            {% for param in parameters %}
+                                <th>{{ param }}</th>
+                            {% endfor %}
+                            <th>View</th>
+                            <th>PDF</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-light">
+                        {% for report in reports %}
+                        <tr>
+                            <td>{{ report.ID }}</td>
+                            <td>{{ report.Department }}</td>
+                            <td>{{ report.Equipment }}</td>
+                            <td>{{ report.User }}</td>
+                            <td>{{ report.Date }}</td>
+                            {% for param in parameters %}
+                                <td class="text-center">
+                                    {{ report.get(param, '-') }}
+                                </td>
+                            {% endfor %}
+                            <td class="text-center">
+                                <a href="{{ url_for('sms2_reports.view_report_sms2', report_id=report.ID) }}" class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ url_for('sms2_reports.download_pdf_sms2', report_id=report.ID) }}" class="btn btn-sm btn-outline-danger">PDF</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No reports found for SMS-2.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

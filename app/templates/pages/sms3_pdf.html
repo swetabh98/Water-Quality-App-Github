@@ -1,0 +1,166 @@
+<!DOCTYPE html><html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SMS-3 Report - {{ report.id }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 7px; margin: 20px; }
+        .header, .footer { text-align: center; }
+        .header h3, .header p { margin: 0; }
+        .section-title { font-size: 10px; font-weight: bold; color: #003B70; border-bottom: 2px solid #F47920; padding-bottom: 3px; margin-top: 15px; margin-bottom: 5px; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; table-layout: fixed; }
+        th, td { border: 1px solid #999; padding: 3px; text-align: center; word-wrap: break-word; }
+        thead th { background-color: #003B70; color: white; font-weight: bold; }
+        tbody .limit-row td { background-color: #f2f2f2; }
+        tbody .param-name { font-weight: bold; background-color: #e9ecef; }
+        .remarks { margin-top: 15px; padding: 10px; border: 1px solid #ccc; background-color: #f8f9fa; }
+    </style>
+</head>
+<body><div class="header">
+    <h3>Daily Cooling Water Analysis Report --- SMS III</h3>
+    <p><strong>Date:</strong> {{ report.sampling_time.strftime('%d.%m.%Y') }}</p>
+</div>
+
+<div class="section-title">ICW & DCW SYSTEM</div>
+<table>
+    <thead>
+        <tr>
+            {% set colwidth = '42pt' %}
+            <th style="width:{{ colwidth }}" rowspan="2">System</th>
+            <th style="width:{{ colwidth }}" rowspan="2">Parameters</th>
+            {% for head in ['pH','TH','CaH','MgH','P-Alk.','M-Alk.','Chloride','Conduc.','Turbidity','TSS*','TDS','Iron','Oil/Grease','Zinc','Phosphate','COC','Silica'] %}
+            <th style="width:{{ colwidth }}">{{ head }}</th>
+            {% endfor %}
+        </tr>
+        <tr>
+            <th style="width:{{ colwidth }}">-</th>
+            {% for _ in range(16) %}
+            <th style="width:{{ colwidth }}">PPM</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% set icw_systems = { 'Raw Water': ['7.2-7.8', '< 120', '< 80', '< 40', 'Nil', 'As per pH', '< 50', '< 350', '< 5', '< 5', '< 230', '< 1.0', 'Nil', 'Nil', 'Nil', '', '< 15'], 'CT-1 (EAF)': ['7.2-8.3', '< 750', '< 425', '< 325', 'Nil', 'As per pH', '< 250', '< 1800', '< 15', '< 15', '< 1170', '< 1.0', '< 1.0', 'Min 0.1 PPM', 'Min 1.0', '< 5.0', '< 75'], 'CT-2 (Spray)': ['7.2-8.3', '< 250', '< 150', '< 100', 'Nil', 'As per pH', '< 150', '< 750', '< 15', '< 15', '< 500', '< 1.0', '< 1.0', 'Nil', 'Min 1.0', '< 3.0', '< 50'], 'CT-3 (VD)': ['7.2-8.3', '< 300', '< 200', '< 150', 'Nil', 'As per pH', '< 150', '< 1000', '< 20', '< 20', '< 650', '< 1.0', '< 1.0', 'Min 0.1 PPM', 'Min 1.0', '< 3.0', '< 50'], 'CT-4 (Billet)': ['7.2-8.3', '< 750', '< 425', '< 325', 'Nil', 'As per pH', '< 250', '< 1800', '< 15', '< 15', '< 1170', '< 1.0', '< 1.0', 'Min 0.1 PPM', 'Min 1.0', '< 5.0', '< 75'] } %}
+        {% set icw_params = ['pH', 'TH', 'CaH', 'MgH', 'P-Alk', 'M-Alk', 'Chloride', 'Conductivity', 'Turbidity', 'TSS', 'TDS', 'Iron', 'Oil/Grease', 'Zinc', 'Phosphate', 'COC', 'Silica'] %}
+        {% for system_name, limits in icw_systems.items() %}
+        <tr class="limit-row">
+            <td class="param-name" style="width:{{ colwidth }}"><strong>{{ system_name }}</strong></td>
+            <td style="width:{{ colwidth }}">LIMIT</td>
+            {% for limit in limits %}<td style="width:{{ colwidth }}">{{ limit }}</td>{% endfor %}
+        </tr>
+        <tr>
+            <td class="param-name" style="width:{{ colwidth }}"><strong>{{ system_name }}</strong></td>
+            <td style="width:{{ colwidth }}">Actual</td>
+            {% for param in icw_params %}<td style="width:{{ colwidth }}">{{ params.get('sms3_icw_' + system_name|urlencode + '_' + param, '-') }}</td>{% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+
+
+
+
+    <div class="section-title">CLOSE LOOP SYSTEM (PRIMARY SYSTEM)</div>
+    <table>
+        <thead>
+            <tr>
+                <th rowspan="2">System</th><th rowspan="2">Parameters</th><th>pH</th><th>TH</th><th>CaH</th><th>MgH</th><th>P-Alk.</th>
+                <th>M-Alk.</th><th>Chloride</th><th>Conductivity</th><th>Turbidity</th><th>TSS*</th><th>TDS</th><th>Nitrite</th>
+            </tr>
+            <tr>
+                <th>-</th><th>PPM</th><th>PPM</th><th>PPM</th><th>PPM</th><th>PPM</th>
+                <th>PPM</th><th>µS/Cm</th><th>NTU</th><th>PPM</th><th>PPM</th><th>PPM</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set close_systems = { 'SOFT WATER': ['7.2-7.8', '< 5', '< 3', '< 2', 'Nil', 'As per pH', '< 50', '< 350', '< 5', '< 5', '< 230', 'Nil'], 'EAF': ['8.0-10.5', '< 10', '< 6', '< 4', 'As per pH', 'As per pH', '< 50', '< 1500', '< 10', '< 10', '< 1000', '250-350'], 'COMBI': ['8.0-10.5', '< 10', '< 6', '< 4', 'As per pH', 'As per pH', '< 50', '< 1500', '< 10', '< 10', '< 1000', '250-350'], 'BILLET': ['8.0-10.5', '< 10', '< 6', '< 4', 'As per pH', 'As per pH', '< 50', '< 1500', '< 10', '< 10', '< 1000', '250-350'] } %}
+            {% set close_params = ['pH', 'TH', 'CaH', 'MgH', 'P-Alk', 'M-Alk', 'Chloride', 'Conductivity', 'Turbidity', 'TSS', 'TDS', 'Nitrite'] %}
+            {% for system_name, limits in close_systems.items() %}
+            <tr class="limit-row">
+                <td rowspan="2" class="param-name"><strong>{{ system_name }}</strong></td>
+                <td>LIMIT</td>
+                {% for limit in limits %}<td>{{ limit }}</td>{% endfor %}
+            </tr>
+            <tr>
+                <td>Actual</td>
+                {% for param in close_params %}
+                <td>{{ params.get('sms3_closeloop_' + system_name|urlencode + '_' + param, '-') }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section-title">Water Consumption</div>
+    <table>
+        <thead>
+            <tr>
+                <th>System</th><th>Final</th><th>Initial</th><th>Consumption</th><th>Design Consumption</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set consumption_systems = ['EAF (SW # 1)', 'Combi Caster ( SW#2)', 'Billet Caster ( SW#3)', 'EAF Secondary', 'VD CT', 'Spray CT', 'Billet Caster Secondary CT'] %}
+            {% for system_name in consumption_systems %}
+            <tr>
+                <td class="param-name"><strong>{{ system_name }}</strong></td>
+                <td>{{ params.get('sms3_consumption_' + system_name|urlencode + '_Final', '-') }}</td>
+                <td>{{ params.get('sms3_consumption_' + system_name|urlencode + '_Initial', '-') }}</td>
+                <td>{{ params.get('sms3_consumption_' + system_name|urlencode + '_Consumption', '-') }}</td>
+                <td>{{ params.get('sms3_consumption_' + system_name|urlencode + '_Design', '-') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section-title">CHEMICAL CONSUMPTION DETAILS</div>
+    <table>
+        <thead>
+            <tr>
+                <th>System</th><th>M-2825</th><th>M-651</th><th>M-10</th><th>M-2610</th><th>M-9002</th>
+                <th>M-2521</th><th>M-7730</th><th>M-7002</th><th>M-357</th><th>M-TG</th><th>M-A 111</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set chemical_systems = ['EAF', 'Combi Caster', 'Billet Caster', 'EAF CT', 'VD CT', 'Spray CT', 'Billet Caster CT', 'Scale Pit / PSF', 'RO', 'Total Cons.', 'Design Cons.', 'Excess dosing', 'Stock', 'Pattern'] %}
+            {% set chemical_params = ['M-2825', 'M-651', 'M-10', 'M-2610', 'M-9002', 'M-2521', 'M-7730', 'M-7002', 'M-357', 'M-TG', 'M-A 111'] %}
+            {% for system_name in chemical_systems %}
+            <tr>
+                <td class="param-name"><strong>{{ system_name }}</strong></td>
+                {% for param in chemical_params %}
+                <td>{{ params.get('sms3_chemical_' + system_name|urlencode + '_' + param, '-') }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section-title">Scale Pit Analysis</div>
+    <table>
+        <thead>
+            <tr>
+                <th rowspan="2">Caster Scalpit</th><th colspan="2">Oil & Grease</th><th colspan="2">TSS</th>
+            </tr>
+            <tr><th>Inlet</th><th>Outlet</th><th>Inlet</th><th>Outlet</th></tr>
+        </thead>
+        <tbody>
+            <tr class="limit-row">
+                <td><strong>Limits</strong></td><td>&lt;10</td><td>-</td><td>-</td><td>&lt;10</td>
+            </tr>
+            <tr>
+                <td><strong>Actual</strong></td>
+                <td>{{ params.get('sms3_scalepit_Oil_Grease_Inlet', '-') }}</td>
+                <td>{{ params.get('sms3_scalepit_Oil_Grease_Outlet', '-') }}</td>
+                <td>{{ params.get('sms3_scalepit_TSS_Inlet', '-') }}</td>
+                <td>{{ params.get('sms3_scalepit_TSS_Outlet', '-') }}</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="remarks">
+        <strong>Remarks:</strong>
+        <p>{{ params.get('sms3_remarks', 'No remarks provided.') }}</p>
+    </div>
+
+</body>
+</html>

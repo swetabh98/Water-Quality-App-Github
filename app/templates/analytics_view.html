@@ -1,0 +1,1379 @@
+{% extends "base.html" %}
+{% block title %}Analytics - {{ department.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-brand">Analytics for {{ department.name }}</h2>
+    <form method="get" class="mb-4" id="filterForm">
+        <input type="hidden" name="selected_system" id="selected_system_input" value="{{ request.args.get('selected_system', '') }}">
+        <input type="hidden" name="selected_sheet" id="selected_sheet_input" value="{{ request.args.get('selected_sheet', '') }}">
+        <div class="d-flex gap-3 align-items-end mb-4">
+            <div>
+                <label for="start_date" class="form-label fw-semibold">From Date:</label>
+                <input type="date" class="form-control" name="start_date" id="start_date" value="{{ start_date or request.args.get('start_date', '') }}">
+            </div>
+            <div>
+                <label for="end_date" class="form-label fw-semibold">To Date:</label>
+                <input type="date" class="form-control" name="end_date" id="end_date" value="{{ end_date or request.args.get('end_date', '') }}">
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Apply</button>
+                <button type="button" id="resetBtn" class="btn btn-secondary">Reset</button>
+            </div>
+        </div>
+    </form>
+
+    {% if chart_data %}
+    <div class="row">
+        {% for param_name, chart in chart_data.items() %}
+        <div class="col-md-6 mb-4">
+            <div class="card shadow border-0">
+                <div class="card-body">
+                    <h6 class="card-title">{{ param_name }} <span class="analytics-card-stats" data-chart-stats-for="chart_{{ loop.index }}"></span></h6>
+                    <canvas id="chart_{{ loop.index }}"></canvas>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# -------- SMS-2 UI -------- #}
+    {% if sms2_data %}
+    <div class="mb-4">
+        <label class="form-label fw-semibold">Select SMS-2 Sheet:</label>
+        <select name="selected_sheet" id="sms2_sheet_selector" class="form-select w-50 mb-3">
+            <option disabled selected>-- Select Page --</option>
+            {% for sheet in sms2_data.keys() %}
+                <option value="{{ sheet }}" {% if selected_sheet == sheet %}selected{% endif %}>{{ sheet }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    {% if selected_sheet %}
+    <div class="mb-4">
+        <label class="form-label fw-semibold">Select System in {{ selected_sheet }}:</label>
+        <select name="selected_system" id="sms2_system_selector" class="form-select w-50 mb-3">
+            <option disabled selected>-- Select System --</option>
+            {% for system_key in sms2_data[selected_sheet].keys() %}
+                {% set display_name = sms2_display_names[selected_sheet][system_key] %}
+                <option value="{{ display_name }}" {% if selected_system == display_name %}selected{% endif %}>{{ display_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% endif %}
+
+    {% if selected_sheet and selected_system %}
+        {% set data = selected_sms2_chart_data %}
+        <h4 class="mt-4 text-success">{{ selected_system }}</h4>
+        <div class="row">
+            {% for param_name, chart in data.items() %}
+            <div class="col-md-6 mb-4">
+                <div class="card shadow border-0">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ param_name.replace('_', ' ') }} <span class="analytics-card-stats" data-chart-stats-for="chart_sms2_{{ param_name | replace(' ', '_') | replace('/', '_') | replace('(', '') | replace(')', '') }}"></span></h6>
+                        <canvas id="chart_sms2_{{ param_name | replace(' ', '_') | replace('/', '_') | replace('(', '') | replace(')', '') }}"></canvas>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    {% endif %}
+
+    {# -------- SMS-3 UI (3 pages) -------- #}
+    {% if sms3_data %}
+    <div class="mb-4">
+        <label class="form-label fw-semibold">Select SMS-3 Page:</label>
+        <select name="selected_sheet" id="sms3_sheet_selector" class="form-select w-50 mb-3">
+            <option disabled selected>-- Select Page --</option>
+            {% for sheet in sms3_data.keys() %}
+                <option value="{{ sheet }}" {% if selected_sheet == sheet %}selected{% endif %}>{{ sheet }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    {% if selected_sheet %}
+    <div class="mb-4">
+        <label class="form-label fw-semibold">Select System in {{ selected_sheet }}:</label>
+        <select name="selected_system" id="sms3_system_selector" class="form-select w-50 mb-3">
+            <option disabled selected>-- Select System --</option>
+            {% for system_key in sms3_data[selected_sheet].keys() %}
+                {% set display_name = sms3_display_names[selected_sheet][system_key] %}
+                <option value="{{ display_name }}" {% if selected_system == display_name %}selected{% endif %}>{{ display_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% endif %}
+
+    {% if selected_sheet and selected_system %}
+        {% set data3 = selected_sms3_chart_data %}
+        <h4 class="mt-4 text-success">{{ selected_system }}</h4>
+        <div class="row">
+            {% for param_name, chart in data3.items() %}
+            <div class="col-md-6 mb-4">
+                <div class="card shadow border-0">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ param_name.replace('_', ' ') }} <span class="analytics-card-stats" data-chart-stats-for="chart_sms3_{{ param_name | replace(' ', '_') | replace('/', '_') | replace('(', '') | replace(')', '') }}"></span></h6>
+                        <canvas id="chart_sms3_{{ param_name | replace(' ', '_') | replace('/', '_') | replace('(', '') | replace(')', '') }}"></canvas>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    {% endif %}
+
+    {% for group, label, selector_id, data, prefix, color in [
+        (system_data, 'System', 'systemSelector', system_data, 'chart', 'green'),
+        (rail_data, 'Rail Mill System', 'railSelector', rail_data, 'chart_rail', 'purple'),
+        (spm_data, 'SPM System', 'spmSelector', spm_data, 'chart_spm', 'red'),
+        (power_plant_data, 'Power Plant System', 'powerPlantSelector', power_plant_data, 'chart_power', 'blue')
+    ] %}
+        {% if data %}
+        <div class="mb-4">
+            <label for="{{ selector_id }}" class="form-label fw-semibold">Select {{ label }}:</label>
+            <select id="{{ selector_id }}" class="form-select w-50">
+                <option disabled selected>-- Select System --</option>
+                {% for system in data.keys() %}
+                    {% set clean_key = system|replace(' ', '_') %}
+                    <option value="{{ clean_key }}">{{ system_labels[system] if system in system_labels else system }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        {% for system, params in data.items() %}
+        <div class="{{ selector_id[:-8] }}-group" id="group_{{ selector_id[:-8] }}_{{ system|replace(' ', '_') }}" style="display: none;">
+            <h4 class="mt-4 text-success">{{ system_labels[system] if system in system_labels else system }}</h4>
+            <div class="row">
+                {% for param_name, chart in params.items() %}
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow border-0">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ param_name }} <span class="analytics-card-stats" data-chart-stats-for="{{ prefix }}_{{ system|replace(' ', '_') }}_{{ loop.index }}"></span></h6>
+                            <canvas id="{{ prefix }}_{{ system|replace(' ', '_') }}_{{ loop.index }}"></canvas>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    {% endfor %}
+
+    {% if not chart_data and not system_data and not rail_data and not spm_data and not power_plant_data and not sms2_data and not sms3_data %}
+    <p class="text-muted">No analytics data available for this department. (Requires at least one report with data)</p>
+    {% endif %}
+</div>
+
+<!-- ensure canvases have visible height -->
+<style>
+  canvas[id^="chart_"],
+  canvas[id^="chart_sms2_"],
+  canvas[id^="chart_sms3_"] {
+    width: 100% !important;
+    height: 260px !important;
+    display: block;
+  }
+  .analytics-card-stats {
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+<script>
+/* ---------- Range helpers (hard-coded, per dept/page/system) ---------- */
+
+// 1) Page resolution (kept same semantics)
+function pageKeyFor(deptName, sheetLabel) {
+  const dept = String(deptName || '').trim().toLowerCase();
+  const sheet = String(sheetLabel || '').trim().toLowerCase();
+
+  if (dept === 'plate mill')  return 'plate_mill.html';
+  if (dept === 'rail mill')   return 'rail_mill_report.html';
+  if (dept === 'spm')         return 'spm_report.html';
+  if (dept === 'power plant') return 'power_plant_report.html';
+
+  if (dept === 'sms-2') {
+    if (sheet.includes('icw') && sheet.includes('dcw')) return 'icw_dcw.html';
+    if (sheet.includes('ccm') && sheet.includes('eaf'))  return 'ccm_eaf.html';
+  }
+  if (dept === 'sms-3') {
+    return 'sms3_report.html';
+  }
+  return null;
+}
+
+// 2) Canonicalize parameter labels so JSON variants match UI labels
+function canonicalParam(raw) {
+  if (!raw) return raw;
+  let s = String(raw).trim();
+  s = s.split(/[\\/]/).pop();
+  if (s.includes('_')) s = s.split('_').pop();
+  s = s.trim();
+
+  const k = s.toLowerCase()
+             .replace(/\./g,'')
+             .replace(/\s+/g,' ')
+             .replace(/_/g,' ');
+
+  const map = {
+    // common & synonyms
+    'ph': 'pH',
+    'total hardness': 'TH',
+    'th': 'TH',
+    'calcium hardness': 'CaH',
+    'cah': 'CaH',
+    'ca-h': 'CaH',
+    'magnesium hardness': 'MgH',
+    'mgh': 'MgH',
+    'mg-h': 'MgH',
+
+    'tds': 'TDS',
+    'tss': 'TSS',
+    'coc': 'COC',
+    'conductivity': 'Conductivity',
+    'cond': 'Conductivity',
+    'chloride': 'Chloride',
+    'cl': 'Chloride',
+    'nitrite': 'Nitrite',
+    'iron': 'Iron',
+    'iron (fe)': 'Iron',
+    'turbidity': 'Turbidity',
+    'turb': 'Turbidity',
+
+    // alkalinity variants
+    'p alk': 'P-Alk',
+    'p-alk': 'P-Alk',
+    'p alkalinity': 'P-Alkalinity',
+    'm alk': 'M-Alk',
+    'm-alk': 'M-Alk',
+    'm alkalinity': 'M-Alkalinity',
+
+    // power-plant label variants
+    't hard': 'T.- Hard',
+    't.- hard': 'T.- Hard',
+    'ca hard': 'Ca- Hard',
+    'ca- hard': 'Ca- Hard',
+    'mg hard': 'Mg- Hard',
+    'mg- hard': 'Mg- Hard',
+    'alk': 'Alk.',
+    'alk.': 'Alk.',
+    'cl-': 'Cl-',
+    'app': 'App.',
+    'app.': 'App.',
+
+    // phosphate / silica
+    'po4': 'PO4',
+    'po4-3': 'PO4-3',
+    'phosphate': 'Phosphate',
+    'o phosphate': 'O-Phosphate',
+    'o-phosphate': 'O-Phosphate',
+    'silica': 'Silica',
+    'sio2': 'SiO2',
+
+    // oil & grease variants
+    'oil and grease': 'Oil_and_Grease',
+    'oil & grease': 'Oil_and_Grease',
+    'oil&grease': 'Oil_and_Grease',
+    'oil/grease': 'Oil/Grease',
+
+    // misc
+    'n2h4': 'N2H4',
+    'hard': 'Hard',
+    'remark': 'Remark',
+    'tbc': 'TBC',
+    'srb': 'SRB',
+    'appearance': 'App.'
+  };
+  return map[k] || s;
+}
+
+// 3) Map UI system names to JSON system nodes where they differ
+function systemKeyForRange(deptName, pageKey, uiSystem) {
+  const d = String(deptName || '').toLowerCase();
+  const s = String(uiSystem   || '').toLowerCase();
+
+  if (d === 'plate mill') return 'Plate Mill (Spec)';
+
+  if (d === 'power plant') {
+    if (s.startsWith('feed water'))               return 'Feed Water';
+    if (s.startsWith('condensate water'))         return 'Condensate Water';
+    if (s.startsWith('industrial cooling water')) return 'Industrial Cooling Water';
+    return null;
+  }
+
+  if (d === 'sms-2' && pageKey === 'icw_dcw.html') return 'Raw Water';
+
+  return uiSystem;
+}
+
+// 4) The entire ranges table hard-coded (exactly from your JSON)
+const RANGES_TABLE = {
+  "Plate Mill": {
+    "plate_mill.html": {
+      "Plate Mill (Spec)": {
+        "pH": "7.2to 7.8",
+        "Conductivity": "<450",
+        "TDS": "<290",
+        "TH": "<120",
+        "Ca-H": "<72",
+        "Mg-H": "<48",
+        "Chloride": "<50",
+        "P-Alkalinity": "NIL",
+        "M-Alkalinity": "<120",
+        "Silica": "<15",
+        "O-Phosphate": "NA",
+        "TSS": "NIL",
+        "Turbidity": "<10",
+        "Iron": "<0.1",
+        "NITRITE": "NA",
+        "COC": "NA"
+      }
+    }
+  },
+  "Rail Mill": {
+    "rail_mill_report.html": {
+      "RHF": {
+        "pH": "8.5-10.5",
+        "Conductivity": "<1500",
+        "Turbidity": "<10",
+        "TH": "<10",
+        "CaH": "<7",
+        "MgH": "<3",
+        "Chloride": "<50",
+        "M-Alkalinity": "As per pH",
+        "Nitrite": "150-250",
+        "IRON": "<0.5",
+        "Silica": "<50",
+        "TDS": "<900",
+        "TSS": "<100",
+        "Oil_and_Grease": "NA",
+        "Zinc": "NA",
+        "Phosphate": "",
+        "Remark": ""
+      },
+      "DCW": {
+        "pH": "7.8-9.0",
+        "Conductivity": "<1000",
+        "Turbidity": "<25 NTU",
+        "TH": "<350",
+        "CaH": "<250",
+        "MgH": "<100",
+        "Chloride": "<150",
+        "M-Alkalinity": "As per pH",
+        "Nitrite": "NA",
+        "IRON": "<1.0",
+        "Silica": "<80",
+        "TDS": "<650",
+        "TSS": "<25",
+        "Oil_and_Grease": "<25",
+        "Zinc": "0.2-0.5",
+        "Phosphate": "4.0-6.0",
+        "Remark": ""
+      },
+      "ICW Mill": {
+        "pH": "8.0-8.4",
+        "Conductivity": "<1000",
+        "Turbidity": "<25 NTU",
+        "TH": "<600",
+        "CaH": "<400",
+        "MgH": "<200",
+        "Chloride": "<350",
+        "M-Alkalinity": "As per pH",
+        "Nitrite": "NA",
+        "IRON": "<1.0",
+        "Silica": "<80",
+        "TDS": "<600",
+        "TSS": "<15",
+        "Oil_and_Grease": "0",
+        "Zinc": "0.2-0.5",
+        "Phosphate": "2.0-4.0",
+        "Remark": ""
+      }
+    }
+  },
+  "SPM": {
+    "spm_report.html": {
+      "RHF": {
+        "pH": "8.5-10.5",
+        "Conductivity": "<1500",
+        "Turbidity": "<10",
+        "TH": "<10",
+        "CaH": "<7",
+        "MgH": "<3",
+        "Chloride": "<50",
+        "M-Alkalinity": "As per pH",
+        "Nitrite": "150-250",
+        "IRON": "<0.5",
+        "Silica": "<50",
+        "TDS": "<900",
+        "TSS": "<100",
+        "Oil_and_Grease": "NA",
+        "Zinc": "NA",
+        "Phosphate": "",
+        "Remark": ""
+      },
+      "DCW": {
+        "pH": "7.8-9.0",
+        "Conductivity": "<1000",
+        "Turbidity": "<25 NTU",
+        "TH": "<350",
+        "CaH": "<250",
+        "MgH": "<100",
+        "Chloride": "<150",
+        "M-Alkalinity": "As per pH",
+        "Nitrite": "NA",
+        "IRON": "<1.0",
+        "Silica": "<80",
+        "TDS": "<650",
+        "TSS": "<25",
+        "Oil_and_Grease": "<25",
+        "Zinc": "0.2-0.5",
+        "Phosphate": "4.0-6.0",
+        "Remark": ""
+      },
+      "ICW Mill": {
+        "pH": "8.0-8.4",
+        "Conductivity": "<1000",
+        "Turbidity": "<25 NTU",
+        "TH": "<600",
+        "CaH": "<400",
+        "MgH": "<200",
+        "Chloride": "<350",
+        "M-Alkalinity": "As per pH",
+        "Nitrite": "NA",
+        "IRON": "<1.0",
+        "Silica": "<80",
+        "TDS": "<600",
+        "TSS": "<15",
+        "Oil_and_Grease": "0",
+        "Zinc": "0.2-0.5",
+        "Phosphate": "2.0-4.0",
+        "Remark": ""
+      }
+    }
+  },
+  "Power Plant": {
+    "power_plant_report.html": {
+      "Feed Water": {
+        "pH": "8.9-9.4",
+        "Hard": "Nil",
+        "Conductivity": "<15",
+        "SiO2": "<0.02",
+        "N2H4": "<0.15",
+        "App.": "Clear"
+      },
+      "Condensate Water": {
+        "pH": "8.5-9.4",
+        "Hard": "Nil",
+        "Conductivity": "<15",
+        "App.": "Clear"
+      },
+      "Industrial Cooling Water": {
+        "pH": "7.0-8.0",
+        "T.- Hard": "<1000",
+        "Ca- Hard": "<600",
+        "Mg- Hard": "<400",
+        "Alk.": "<200",
+        "Conductivity": "<5000",
+        "TDS": "<2500",
+        "Cl-": "<500",
+        "Turbidity": "<20",
+        "SiO2": "<150",
+        "PO4-3": "<10",
+        "COC": ">04"
+      }
+    }
+  },
+  "SMS-3": {
+    "sms3_report.html": {
+      "Raw Water (ICW)": {
+        "pH": "7.2-7.8",
+        "TH": "< 120",
+        "CaH": "< 80",
+        "MgH": "< 40",
+        "P-Alk": "Nil",
+        "M-Alk": "As per pH",
+        "Chloride": "< 50",
+        "Conductivity": "< 350",
+        "Turbidity": "< 5",
+        "TSS": "< 5",
+        "TDS": "< 230",
+        "Iron": "< 1.0",
+        "Oil/Grease": "Nil",
+        "Zinc": "Nil",
+        "Phosphate": "Nil",
+        "COC": "",
+        "Silica": "< 15"
+      },
+      "CT-1 (EAF) (ICW)": {
+        "pH": "7.2-8.3",
+        "TH": "< 750",
+        "CaH": "< 425",
+        "MgH": "< 325",
+        "P-Alk": "Nil",
+        "M-Alk": "As per pH",
+        "Chloride": "< 250",
+        "Conductivity": "< 1800",
+        "Turbidity": "< 15",
+        "TSS": "< 15",
+        "TDS": "< 1170",
+        "Iron": "< 1.0",
+        "Oil/Grease": "< 1.0",
+        "Zinc": "Min 0.1 PPM",
+        "Phosphate": "Min 1.0",
+        "COC": "< 5.0",
+        "Silica": "< 75"
+      },
+      "CT-2 (Spray) (ICW)": {
+        "pH": "7.2-8.3",
+        "TH": "< 250",
+        "CaH": "< 150",
+        "MgH": "< 100",
+        "P-Alk": "Nil",
+        "M-Alk": "As per pH",
+        "Chloride": "< 150",
+        "Conductivity": "< 750",
+        "Turbidity": "< 15",
+        "TSS": "< 15",
+        "TDS": "< 500",
+        "Iron": "< 1.0",
+        "Oil/Grease": "< 1.0",
+        "Zinc": "Nil",
+        "Phosphate": "Min 1.0",
+        "COC": "< 3.0",
+        "Silica": "< 50"
+      },
+      "CT-3 (VD) (ICW)": {
+        "pH": "7.2-8.3",
+        "TH": "< 300",
+        "CaH": "< 200",
+        "MgH": "< 150",
+        "P-Alk": "Nil",
+        "M-Alk": "As per pH",
+        "Chloride": "< 150",
+        "Conductivity": "< 1000",
+        "Turbidity": "< 20",
+        "TSS": "< 20",
+        "TDS": "< 650",
+        "Iron": "< 1.0",
+        "Oil/Grease": "< 1.0",
+        "Zinc": "Min 0.1 PPM",
+        "Phosphate": "Min 1.0",
+        "COC": "< 3.0",
+        "Silica": "< 50"
+      },
+      "CT-4 (Billet) (ICW)": {
+        "pH": "7.2-8.3",
+        "TH": "< 750",
+        "CaH": "< 425",
+        "MgH": "< 325",
+        "P-Alk": "Nil",
+        "M-Alk": "As per pH",
+        "Chloride": "< 250",
+        "Conductivity": "< 1800",
+        "Turbidity": "< 15",
+        "TSS": "< 15",
+        "TDS": "< 1170",
+        "Iron": "< 1.0",
+        "Oil/Grease": "< 1.0",
+        "Zinc": "Min 0.1 PPM",
+        "Phosphate": "Min 1.0",
+        "COC": "< 5.0",
+        "Silica": "< 75"
+      },
+      "SOFT WATER (Closed Loop)": {
+        "pH": "7.2-7.8",
+        "TH": "< 5",
+        "CaH": "< 3",
+        "MgH": "< 2",
+        "P-Alk": "Nil",
+        "M-Alk": "As per pH",
+        "Chloride": "< 50",
+        "Conductivity": "< 350",
+        "Turbidity": "< 5",
+        "TSS": "< 5",
+        "TDS": "< 230",
+        "Nitrite": "Nil"
+      },
+      "EAF (Closed Loop)": {
+        "pH": "8.0-10.5",
+        "TH": "< 10",
+        "CaH": "< 6",
+        "MgH": "< 4",
+        "P-Alk": "As per pH",
+        "M-Alk": "As per pH",
+        "Chloride": "< 50",
+        "Conductivity": "< 1500",
+        "Turbidity": "< 10",
+        "TSS": "< 10",
+        "TDS": "< 1000",
+        "Nitrite": "250-350"
+      },
+      "COMBI (Closed Loop)": {
+        "pH": "8.0-10.5",
+        "TH": "< 10",
+        "CaH": "< 6",
+        "MgH": "< 4",
+        "P-Alk": "As per pH",
+        "M-Alk": "As per pH",
+        "Chloride": "< 50",
+        "Conductivity": "< 1500",
+        "Turbidity": "< 10",
+        "TSS": "< 10",
+        "TDS": "< 1000",
+        "Nitrite": "250-350"
+      },
+      "BILLET (Closed Loop)": {
+        "pH": "8.0-10.5",
+        "TH": "< 10",
+        "CaH": "< 6",
+        "MgH": "< 4",
+        "P-Alk": "As per pH",
+        "M-Alk": "As per pH",
+        "Chloride": "< 50",
+        "Conductivity": "< 1500",
+        "Turbidity": "< 10",
+        "TSS": "< 10",
+        "TDS": "< 1000",
+        "Nitrite": "250-350"
+      }
+    }
+  },
+  "SMS-2": {
+    "icw_dcw.html": {
+      "Raw Water": {
+        "pH": "-",
+        "TH": "-",
+        "CaH": "-",
+        "MgH": "-",
+        "P-Alk": "-",
+        "M-Alk": "-",
+        "Chloride": "-",
+        "Conductivity": "-",
+        "Turbidity": "-",
+        "TSS": "-",
+        "Iron": "-",
+        "COC": "-",
+        "TDS": "-",
+        "PO4": "-"
+      },
+      "CT-1 (DCW, SLAB)": {
+        "pH": "7.50-8.30",
+        "TH": "<350",
+        "CaH": "<180",
+        "MgH": "<180",
+        "P-Alk": "as per pH",
+        "M-Alk": "<150",
+        "Chloride": "<250",
+        "Conductivity": "<3000",
+        "Turbidity": "<20",
+        "TSS": "<20",
+        "Iron": "<3",
+        "COC": "<5.0",
+        "TDS": "-",
+        "PO4": "<1500"
+      },
+      "CT-6 (DCW, BL. & COMBI)": {
+        "pH": "8.50-8.90",
+        "TH": "<350",
+        "CaH": "<210",
+        "MgH": "<140",
+        "P-Alk": "as per pH",
+        "M-Alk": "<200",
+        "Chloride": "<100",
+        "Conductivity": "<1200",
+        "Turbidity": "<20",
+        "TSS": "<20",
+        "Iron": "<4",
+        "COC": "<5.0",
+        "TDS": "-",
+        "PO4": "<600"
+      },
+      "CT-2 (LRF 1 & COMBI)": {
+        "pH": "8.50-8.90",
+        "TH": "<350",
+        "CaH": "<210",
+        "MgH": "<140",
+        "P-Alk": "as per pH",
+        "M-Alk": "<200",
+        "Chloride": "<100",
+        "Conductivity": "<1200",
+        "Turbidity": "<20",
+        "TSS": "<20",
+        "Iron": "<4",
+        "COC": "<5.0",
+        "TDS": "-",
+        "PO4": "<600"
+      },
+      "CT-3 (VD)": {
+        "pH": "8.50-8.90",
+        "TH": "<350",
+        "CaH": "<210",
+        "MgH": "<140",
+        "P-Alk": "as per pH",
+        "M-Alk": "<200",
+        "Chloride": "<100",
+        "Conductivity": "<1200",
+        "Turbidity": "<20",
+        "TSS": "<20",
+        "Iron": "<4",
+        "COC": "<5.0",
+        "TDS": "-",
+        "PO4": "<600"
+      },
+      "CT-4 (LRF 2&3)": {
+        "pH": "8.50-8.90",
+        "TH": "<350",
+        "CaH": "<210",
+        "MgH": "<140",
+        "P-Alk": "as per pH",
+        "M-Alk": "<200",
+        "Chloride": "<100",
+        "Conductivity": "<1200",
+        "Turbidity": "<20",
+        "TSS": "<20",
+        "Iron": "<4",
+        "COC": "<5.0",
+        "TDS": "-",
+        "PO4": "<600"
+      },
+      "CT-5 (BL. & SLAB)": {
+        "pH": "7.50-8.30",
+        "TH": "<350",
+        "CaH": "<110",
+        "MgH": "<140",
+        "P-Alk": "as per pH",
+        "M-Alk": "<200",
+        "Chloride": "<150",
+        "Conductivity": "<1800",
+        "Turbidity": "<20",
+        "TSS": "<20",
+        "Iron": "<4",
+        "COC": "<5.0",
+        "TDS": "-",
+        "PO4": "<900"
+      },
+      "CT-7 (FES)": {
+        "pH": "8.50-8.90",
+        "TH": "<350",
+        "CaH": "<210",
+        "MgH": "<140",
+        "P-Alk": "as per pH",
+        "M-Alk": "<200",
+        "Chloride": "<100",
+        "Conductivity": "<1200",
+        "Turbidity": "<20",
+        "TSS": "<20",
+        "Iron": "<4",
+        "COC": "<5.0",
+        "TDS": "-",
+        "PO4": "<600"
+      },
+      "CT-8 (EAF)": {
+        "pH": "8.50-8.90",
+        "TH": "<350",
+        "CaH": "<210",
+        "MgH": "<140",
+        "P-Alk": "as per pH",
+        "M-Alk": "<200",
+        "Chloride": "<100",
+        "Conductivity": "<1200",
+        "Turbidity": "<20",
+        "TSS": "<20",
+        "Iron": "<4",
+        "COC": "<5.0",
+        "TDS": "-",
+        "PO4": "<600"
+      }
+    },
+    "ccm_eaf.html": {
+      "SOFT WATER": {
+        "pH": "-",
+        "TH": "<20",
+        "P-Alk": "as per pH",
+        "M-Alk": "as per pH",
+        "Chloride": "<50",
+        "Conductivity": "<600",
+        "Turbidity": "<20",
+        "TSS": "<20",
+        "Nitrite": "150-200",
+        "Iron": "<1",
+        "TDS": "<300",
+        "TBC": "<100000",
+        "SRB": "<100"
+      },
+      "COMBI CASTER": {
+        "pH": "8.0-9.0",
+        "TH": "<20",
+        "P-Alk": "as per pH",
+        "M-Alk": "as per pH",
+        "Chloride": "<50",
+        "Conductivity": "<600",
+        "Turbidity": "<20",
+        "TSS": "<20",
+        "Nitrite": "150-200",
+        "Iron": "<1",
+        "TDS": "<300",
+        "TBC": "<100000",
+        "SRB": "<100"
+      },
+      "BILLET&SLAB MACHINE": {
+        "pH": "7.0-9.5",
+        "TH": "<10",
+        "P-Alk": "as per pH",
+        "M-Alk": "as per pH",
+        "Chloride": "<100",
+        "Conductivity": "<750",
+        "Turbidity": "<20",
+        "TSS": "<20",
+        "Nitrite": "250-300",
+        "Iron": "<1",
+        "TDS": "<400",
+        "TBC": "<100000",
+        "SRB": "<100"
+      },
+      "SLAB MOULD": {
+        "pH": "8.5-9.5",
+        "TH": "<10",
+        "P-Alk": "as per pH",
+        "M-Alk": "as per pH",
+        "Chloride": "<50",
+        "Conductivity": "<1000",
+        "Turbidity": "<10",
+        "TSS": "<10",
+        "Nitrite": "250-300",
+        "Iron": "<1",
+        "TDS": "<300",
+        "TBC": "<100000",
+        "SRB": "<100"
+      },
+      "LRF # 1": {
+        "pH": "8.5-9.5",
+        "TH": "<10",
+        "P-Alk": "as per pH",
+        "M-Alk": "as per pH",
+        "Chloride": "<50",
+        "Conductivity": "<1000",
+        "Turbidity": "<10",
+        "TSS": "<10",
+        "Nitrite": "250-300",
+        "Iron": "<1",
+        "TDS": "<300",
+        "TBC": "<100000",
+        "SRB": "<100"
+      },
+      "LRF # 2 AND 3": {
+        "pH": "8.5-9.5",
+        "TH": "<10",
+        "P-Alk": "as per pH",
+        "M-Alk": "as per pH",
+        "Chloride": "<50",
+        "Conductivity": "<1000",
+        "Turbidity": "<10",
+        "TSS": "<10",
+        "Nitrite": "250-300",
+        "Iron": "<1",
+        "TDS": "<300",
+        "TBC": "<100000",
+        "SRB": "<100"
+      },
+      "EAF#1": {
+        "pH": "8.5-9.5",
+        "TH": "<10",
+        "P-Alk": "as per pH",
+        "M-Alk": "as per pH",
+        "Chloride": "<50",
+        "Conductivity": "<1000",
+        "Turbidity": "<20",
+        "TSS": "<20",
+        "Nitrite": "250-300",
+        "Iron": "<0.1",
+        "TDS": "<600",
+        "TBC": "<100000",
+        "SRB": "<100"
+      },
+      "EAF#2": {
+        "pH": "8.5-9.F5",
+        "TH": "<10",
+        "P-Alk": "as per pH",
+        "M-Alk": "as per pH",
+        "Chloride": "<50",
+        "Conductivity": "<1000",
+        "Turbidity": "<20",
+        "TSS": "<20",
+        "Nitrite": "250-300",
+        "Iron": "<0.1",
+        "TDS": "<600",
+        "TBC": "<100000",
+        "SRB": "<100"
+      },
+      "FES": {
+        "pH": "8.5-9.5",
+        "TH": "<10",
+        "P-Alk": "as per pH",
+        "M-Alk": "as per pH",
+        "Chloride": "<50",
+        "Conductivity": "<1000",
+        "Turbidity": "<20",
+        "TSS": "<20",
+        "Nitrite": "250-300",
+        "Iron": "<0.1",
+        "TDS": "<600",
+        "TBC": "<100000",
+        "SRB": "<100"
+      }
+    }
+  }
+};
+
+// ---------- tiny helpers for tolerant lookups & parsing ----------
+function normKey(s){
+  return String(s||'')
+    .toLowerCase()
+    .replace(/[^\w\s.-]/g,'')   // drop #,&,(,),/
+    .replace(/\s+/g,' ')
+    .trim();
+}
+function findKey(obj, wanted){
+  if (!obj) return null;
+  const target = normKey(wanted);
+  for (const k of Object.keys(obj)){
+    if (normKey(k) === target) return k;
+  }
+  return null;
+}
+
+function parseRangeStr(r){
+  if (r == null) return null;
+  let s = String(r).trim();
+  if (!s) return null;
+
+  // textual non-numeric specs -> no lines
+  const txt = s.toLowerCase();
+  if (['na','n/a','nil','as per ph','clear',''].includes(txt)) return null;
+
+  // Cleanups
+  s = s.replace(/–|—/g,'-')
+       .replace(/≤/g,'<=')
+       .replace(/≥/g,'>=')
+       .replace(/\s*to\s*/gi,'-')
+       .replace(/([0-9])\.[^\d]?([0-9])/g,'$1.$2'); // fix "9.F5" -> "9.5"
+
+  // "a-b"
+  let m = s.match(/^\s*([0-9]+(?:\.[0-9]+)?)\s*-\s*([0-9]+(?:\.[0-9]+)?)\s*(?:[a-z%/ ]+)?$/i);
+  if (m) return {low: parseFloat(m[1]), high: parseFloat(m[2])};
+
+  // "<= a" / ">= a" / "< a" / "> a"
+  m = s.match(/^\s*(<=|>=|<|>)\s*0*([0-9]+(?:\.[0-9]+)?)\s*(?:[a-z%/ ]+)?$/i);
+  if (m){
+    const op = m[1], v = parseFloat(m[2]);
+    return (op === '<' || op === '<=') ? {low: null, high: v} : {low: v, high: null};
+  }
+
+  // "max a" / "min a"
+  m = s.match(/^\s*(max|min)\s*0*([0-9]+(?:\.[0-9]+)?)\s*(?:[a-z%/ ]+)?$/i);
+  if (m){
+    const v = parseFloat(m[2]);
+    return m[1].toLowerCase() === 'max' ? {low: null, high: v} : {low: v, high: null};
+  }
+
+  // "Min 0.1 PPM" / "min 1.0"
+  m = s.match(/^\s*min\s*0*([0-9]+(?:\.[0-9]+)?)\s*(?:[a-z%/ ]+)?$/i);
+  if (m) return {low: parseFloat(m[1]), high: null};
+
+  // Single number -> treat as an upper bound
+  m = s.match(/^\s*0*([0-9]+(?:\.[0-9]+)?)\s*(?:[a-z%/ ]+)?$/i);
+  if (m) return {low: null, high: parseFloat(m[1])};
+
+  return null;
+}
+
+function getRangeFor(deptName, pageKey, systemName, paramName){
+  const dKey = findKey(RANGES_TABLE, deptName);
+  if (!dKey) return null;
+  const dept = RANGES_TABLE[dKey];
+
+  const pKey = findKey(dept, pageKey);
+  if (!pKey) return null;
+  const page = dept[pKey];
+
+  let canon = canonicalParam(paramName);
+
+  // Build alias list to bridge UI names <-> JSON keys (esp. Power Plant)
+  const aliases = [canon];
+  const d = String(deptName || '').toLowerCase();
+  const s = String(systemName || '').toLowerCase();
+
+  if (d === 'power plant') {
+    if (canon === 'TH') {
+      aliases.push('T.- Hard');
+      if (s.startsWith('feed water') || s.startsWith('condensate water')) aliases.push('Hard');
+    }
+    if (canon === 'CaH') aliases.push('Ca- Hard');
+    if (canon === 'MgH') aliases.push('Mg- Hard');
+    if (canon === 'M-Alkalinity' || canon === 'M-Alk') aliases.push('Alk.');
+    if (canon === 'Chloride') aliases.push('Cl-');
+    if (canon === 'Silica') aliases.push('SiO2');
+    if (canon === 'Phosphate' || canon === 'PO4') aliases.push('PO4-3');
+  }
+
+  // helper to pull from a system node by tolerant param key match
+  const pickFromSystem = (sysNode) => {
+    if (!sysNode) return null;
+    for (const k of Object.keys(sysNode)){
+      const ck = canonicalParam(k);
+      if (aliases.includes(ck)) {
+        return parseRangeStr(sysNode[k]);
+      }
+    }
+    return null;
+  };
+
+  // If we have a system, try that first (after mapping)
+  if (systemName){
+    const mapped = systemKeyForRange(deptName, pageKey, systemName);
+    const sKey = findKey(page, mapped);
+    const sysNode = sKey ? page[sKey] : null;
+    const hit = pickFromSystem(sysNode);
+    if (hit) return hit;
+  }
+
+  // Fallback: scan all systems under the page for the first param match
+  for (const sys of Object.values(page)){
+    const hit = pickFromSystem(sys);
+    if (hit) return hit;
+  }
+  return null;
+}
+
+// 5) Add dashed lines to an existing chart
+function applyRangeLines(chart, xLabels, rangeObj) {
+  if (!chart || !rangeObj) return;
+  const lo = rangeObj.low;
+  const hi = rangeObj.high;
+
+  const xs = (Array.isArray(xLabels) && xLabels.length)
+    ? xLabels
+    : (chart.data?.datasets?.[0]?.data || []).map(p => p?.x);
+
+  if (!xs || !xs.length) return;
+
+  const mkLine = (y, label, color) => ({
+    label,
+    data: xs.map(x => ({ x, y })),
+    borderDash: [6,6],
+    borderColor: color,
+    pointRadius: 0,
+    fill: false
+  });
+
+  const newSets = [];
+  if (lo != null) newSets.push(mkLine(lo, "Low",  "rgba(239, 68, 68, 0.95)"));
+  if (hi != null) newSets.push(mkLine(hi, "High", "rgba(79, 70, 229, 0.95)"));
+
+  if (newSets.length) {
+    chart.data.datasets = chart.data.datasets.concat(newSets);
+    chart.update();
+  }
+}
+
+function updateAnalyticsCardStats(canvasId, values, rangeObj) {
+  const target = document.querySelector(`[data-chart-stats-for="${canvasId}"]`);
+  if (!target) return;
+
+  const numericValues = (Array.isArray(values) ? values : [])
+    .map(v => Number(v))
+    .filter(v => Number.isFinite(v));
+  const filledCount = numericValues.length;
+
+  if (!rangeObj || (rangeObj.low == null && rangeObj.high == null)) {
+    target.textContent = `(Reports Filled: ${filledCount} | In Range: N/A | Out of Range: N/A)`;
+    return;
+  }
+
+  let inRange = 0;
+  let outOfRange = 0;
+  numericValues.forEach(v => {
+    const okLow = rangeObj.low == null || v >= rangeObj.low;
+    const okHigh = rangeObj.high == null || v <= rangeObj.high;
+    if (okLow && okHigh) inRange += 1;
+    else outOfRange += 1;
+  });
+
+  target.textContent = `(Reports Filled: ${filledCount} | In Range: ${inRange} | Out of Range: ${outOfRange})`;
+}
+
+/* ---------- Page scripts ---------- */
+document.addEventListener('DOMContentLoaded', function () {
+    const deptId   = {{ department.id }};
+    const deptName = {{ department.name | tojson }};
+
+    const chartPalette = [
+        { border: '#4f46e5', bg: 'rgba(79, 70, 229, 0.14)' },
+        { border: '#ec4899', bg: 'rgba(236, 72, 153, 0.14)' },
+        { border: '#06b6d4', bg: 'rgba(6, 182, 212, 0.14)' },
+        { border: '#10b981', bg: 'rgba(16, 185, 129, 0.14)' },
+        { border: '#f97316', bg: 'rgba(249, 115, 22, 0.14)' },
+        { border: '#9333ea', bg: 'rgba(147, 51, 234, 0.14)' },
+        { border: '#eab308', bg: 'rgba(234, 179, 8, 0.16)' },
+        { border: '#ef4444', bg: 'rgba(239, 68, 68, 0.12)' }
+    ];
+    function chartTheme(name) {
+        const text = String(name || 'chart');
+        let hash = 0;
+        for (let i = 0; i < text.length; i++) hash = ((hash << 5) - hash) + text.charCodeAt(i);
+        return chartPalette[Math.abs(hash) % chartPalette.length];
+    }
+    const modernChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 850, easing: 'easeOutQuart' },
+        plugins: {
+            legend: { labels: { color: '#334155', font: { weight: '700' } } },
+            tooltip: { backgroundColor: '#111827', titleColor: '#ffffff', bodyColor: '#e5e7eb', padding: 12, cornerRadius: 10 }
+        },
+        scales: {
+            x: { type: 'time', grid: { color: 'rgba(148, 163, 184, 0.16)' }, ticks: { color: '#64748b' } },
+            y: { grid: { color: 'rgba(148, 163, 184, 0.22)' }, ticks: { color: '#64748b' } }
+        }
+    };
+
+
+    // --- Render average department charts ---
+    {% for param_name, chart in chart_data.items() %}
+    (function(){
+        const el = document.getElementById('chart_{{ loop.index }}');
+        if(!el) return;
+
+        const paramName = {{ param_name | tojson }};
+        const labels = {{ chart["labels"] | tojson }};
+        const values = {{ chart["values"] | tojson }};
+        const points = labels.map((x, i) => ({ x, y: values[i] }));
+
+        const chartObj = new Chart(el.getContext('2d'), {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: paramName + ' (Avg)',
+                    data: points,
+                    borderColor: chartTheme(paramName).border,
+                    backgroundColor: chartTheme(paramName).bg,
+                    fill: true,
+                    tension: 0.35,
+                    borderWidth: 3,
+                    pointRadius: 3,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: modernChartOptions
+        });
+
+        const pageKey = pageKeyFor(deptName, null);
+        const hc = getRangeFor(deptName, pageKey, null, paramName);
+        applyRangeLines(chartObj, labels, hc);
+        updateAnalyticsCardStats('chart_{{ loop.index }}', values, hc);
+    })();
+    {% endfor %}
+
+    // --- Render per-system charts for other departments ---
+    {% for prefix, data, color in [('chart', system_data, 'green'), ('chart_rail', rail_data, 'purple'), ('chart_spm', spm_data, 'red'), ('chart_power', power_plant_data, 'blue')] %}
+        {% for system, params in data.items() %}
+            {% for param_name, chart in params.items() %}
+            (function(){
+                const id = '{{ prefix }}_{{ system|replace(" ", "_") }}_{{ loop.index }}';
+                const el = document.getElementById(id);
+                if(!el) return;
+
+                const systemName = {{ system | tojson }};
+                const paramName  = {{ param_name | tojson }};
+                const labels     = {{ chart["labels"] | tojson }};
+                const values     = {{ chart["values"] | tojson }};
+                const points     = labels.map((x, i) => ({ x, y: values[i] }));
+
+                const chartObj = new Chart(el.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        datasets: [{
+                            label: paramName,
+                            data: points,
+                            borderColor: chartTheme(systemName + paramName).border,
+                            backgroundColor: chartTheme(systemName + paramName).bg,
+                            fill: true,
+                            tension: 0.35,
+                            borderWidth: 3,
+                            pointRadius: 3,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: modernChartOptions
+                });
+
+                const pageKey   = pageKeyFor(deptName, null);
+                const hc        = getRangeFor(deptName, pageKey, systemName, paramName);
+                applyRangeLines(chartObj, labels, hc);
+                updateAnalyticsCardStats(id, values, hc);
+            })();
+            {% endfor %}
+        {% endfor %}
+    {% endfor %}
+
+    // --- Dropdown logic for other departments ---
+    const dropdowns = ["systemSelector", "railSelector", "spmSelector", "powerPlantSelector"];
+    dropdowns.forEach(selectorId => {
+        const selector = document.getElementById(selectorId);
+        if (selector) {
+            selector.addEventListener('change', function () {
+                document.querySelectorAll(`.${selectorId.slice(0, -8)}-group`).forEach(group => group.style.display = 'none');
+                const targetGroup = document.getElementById(`group_${selectorId.slice(0, -8)}_${this.value}`);
+                if (targetGroup) {
+                    targetGroup.style.display = 'block';
+                }
+            });
+            const urlParams = new URLSearchParams(window.location.search);
+            const selectedSystem = urlParams.get('selected_system');
+            if (selector.querySelector(`option[value="${selectedSystem}"]`)) {
+                selector.value = selectedSystem;
+                selector.dispatchEvent(new Event('change'));
+            }
+        }
+    });
+
+    // --- Reset logic ---
+    const resetBtn = document.getElementById('resetBtn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("start_date");
+            url.searchParams.delete("end_date");
+            url.searchParams.delete("selected_system");
+            url.searchParams.delete("selected_sheet");
+            window.location.href = url.toString();
+        });
+    }
+
+    // --- SMS-2 dropdown sync ---
+    const sms2SheetSelector = document.getElementById('sms2_sheet_selector');
+    const sms2SystemSelector = document.getElementById('sms2_system_selector');
+    if (sms2SheetSelector) {
+        sms2SheetSelector.addEventListener('change', function () {
+            document.getElementById('selected_sheet_input').value = this.value;
+            document.getElementById('selected_system_input').value = '';
+            document.getElementById('filterForm').submit();
+        });
+    }
+    if (sms2SystemSelector) {
+        sms2SystemSelector.addEventListener('change', function () {
+            document.getElementById('selected_system_input').value = this.value;
+            document.getElementById('filterForm').submit();
+        });
+    }
+
+    // --- SMS-3 dropdown sync ---
+    const sms3SheetSelector = document.getElementById('sms3_sheet_selector');
+    const sms3SystemSelector = document.getElementById('sms3_system_selector');
+    if (sms3SheetSelector) {
+        sms3SheetSelector.addEventListener('change', function () {
+            document.getElementById('selected_sheet_input').value = this.value;
+            document.getElementById('selected_system_input').value = '';
+            document.getElementById('filterForm').submit();
+        });
+    }
+    if (sms3SystemSelector) {
+        sms3SystemSelector.addEventListener('change', function () {
+            document.getElementById('selected_system_input').value = this.value;
+            document.getElementById('filterForm').submit();
+        });
+    }
+
+    // --- Render SMS-2 charts + hardcoded ranges ---
+    {% if selected_sheet and selected_system and selected_sms2_chart_data %}
+        {% set data = selected_sms2_chart_data %}
+        {% for param_name, chart in data.items() %}
+        (function(){
+            const canvasId = 'chart_sms2_{{ param_name | replace(' ', '_') | replace('/', '_') | replace('(', '') | replace(')', '') }}';
+            const el = document.getElementById(canvasId);
+            if(!el) return;
+
+            const uiSheet    = {{ selected_sheet  | tojson }};
+            const systemName = {{ selected_system | tojson }};
+            const paramName  = {{ param_name      | tojson }};
+            const labels     = {{ chart["labels"] | tojson }};
+            const values     = {{ chart["values"] | tojson }};
+            const points     = labels.map((x, i) => ({ x, y: values[i] }));
+
+            const chartObj = new Chart(el.getContext('2d'), {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: paramName.replaceAll("_", " "),
+                        data: points,
+                        borderColor: chartTheme(systemName + paramName).border,
+                        backgroundColor: chartTheme(systemName + paramName).bg,
+                        fill: true,
+                        tension: 0.35,
+                        borderWidth: 3,
+                        pointRadius: 3,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: modernChartOptions
+            });
+
+            const pageKey   = pageKeyFor(deptName, uiSheet);
+            const hc        = getRangeFor(deptName, pageKey, systemName, paramName);
+            applyRangeLines(chartObj, labels, hc);
+            updateAnalyticsCardStats(canvasId, values, hc);
+        })();
+        {% endfor %}
+    {% endif %}
+
+    // --- Render SMS-3 charts + hardcoded ranges ---
+    {% if selected_sheet and selected_system and selected_sms3_chart_data %}
+        {% set data3 = selected_sms3_chart_data %}
+        {% for param_name, chart in data3.items() %}
+        (function(){
+            const canvasId = 'chart_sms3_{{ param_name | replace(' ', '_') | replace('/', '_') | replace('(', '') | replace(')', '') }}';
+            const el = document.getElementById(canvasId);
+            if(!el) return;
+
+            const uiSheet    = {{ selected_sheet  | tojson }};
+            const systemName = {{ selected_system | tojson }};
+            const paramName  = {{ param_name      | tojson }};
+            const labels     = {{ chart["labels"] | tojson }};
+            const values     = {{ chart["values"] | tojson }};
+            const points     = labels.map((x, i) => ({ x, y: values[i] }));
+
+            const chartObj = new Chart(el.getContext('2d'), {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: paramName.replaceAll("_", " "),
+                        data: points,
+                        borderColor: chartTheme(systemName + paramName).border,
+                        backgroundColor: chartTheme(systemName + paramName).bg,
+                        fill: true,
+                        tension: 0.35,
+                        borderWidth: 3,
+                        pointRadius: 3,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: modernChartOptions
+            });
+
+            const pageKey   = pageKeyFor(deptName, uiSheet);
+            const hc        = getRangeFor(deptName, pageKey, systemName, paramName);
+            applyRangeLines(chartObj, labels, hc);
+            updateAnalyticsCardStats(canvasId, values, hc);
+        })();
+        {% endfor %}
+    {% endif %}
+});
+</script>
+{% endblock %}

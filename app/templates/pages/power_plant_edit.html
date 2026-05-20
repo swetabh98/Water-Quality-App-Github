@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Edit Power Plant Report (ID: {{ report.id }}){% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <form method="POST">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h3 class="mb-1">Edit Report ID: {{ report.id }}</h3>
+                <p class="text-muted mb-0">
+                    {{ department.name }} | Submitted by {{ report.user.email }} on {{ sampling_time.strftime('%Y-%m-%d %H:%M:%S') }}
+                </p>
+            </div>
+            <div>
+                <a href="{{ url_for('power_plant_reports.view_report_power_plant', report_id=report.id) }}" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success">Update Report</button>
+            </div>
+        </div>
+        
+        <div class="container mt-4">
+            <div class="text-center mb-3">
+                <h4 class="mb-0">Power Plant Water Analysis Report</h4>
+                <p><strong>Date:</strong> {{ sampling_time.strftime('%d.%m.%Y') }}</p>
+            </div>
+
+            <h5 class="mt-4 fw-bold">Feed Water</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered text-center align-middle small">
+                    <thead class="table-primary">
+                        <tr>
+                            <th rowspan="2">Parameters</th><th rowspan="2">UOM</th><th rowspan="2">Standard</th>
+                            <th>PP1</th><th>PP2X55</th><th>PH2X25</th><th>PP3x25</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set feed_params = [ ('pH', 'pH', '8.9-9.4'), ('Hard', 'ppm', 'Nil'), ('Conductivity', 'ms/cm', '<15'), ('SiO2', 'ppm', '<0.02'), ('N2H4', 'ppm', '<0.15'), ('App.', '--', 'Clear') ] %}
+                        {% for param, uom, standard in feed_params %}
+                        <tr>
+                            <td class="fw-bold" style="background-color: #f2f2f2;"><strong>{{ param }}</strong></td>
+                            <td>{{ uom }}</td>
+                            <td>{{ standard }}</td>
+                            <td><input type="text" name="power_plant_feed_PP1_{{ param }}_value" class="form-control form-control-sm" value="{{ existing_data.get('power_plant_feed_PP1_' + param, '') }}"></td>
+                            <td><input type="text" name="power_plant_feed_PP2X55_{{ param }}_value" class="form-control form-control-sm" value="{{ existing_data.get('power_plant_feed_PP2X55_' + param, '') }}"></td>
+                            <td><input type="text" name="power_plant_feed_PH2X25_{{ param }}_value" class="form-control form-control-sm" value="{{ existing_data.get('power_plant_feed_PH2X25_' + param, '') }}"></td>
+                            <td><input type="text" name="power_plant_feed_PP3x25_{{ param }}_value" class="form-control form-control-sm" value="{{ existing_data.get('power_plant_feed_PP3x25_' + param, '') }}"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <h5 class="mt-4 fw-bold">Condensate Water</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered text-center align-middle small">
+                    <thead class="table-primary">
+                        <tr>
+                            <th rowspan="2">Parameters</th><th rowspan="2">UOM</th><th rowspan="2">Standard</th>
+                            <th>PP1</th><th>PP2X55</th><th>PH2X25</th><th>PP3x25</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set condensate_params = [ ('pH', 'pH', '8.5-9.4'), ('Hard', 'ppm', 'Nil'), ('Conductivity', 'ms/cm', '<15'), ('App.', '--', 'Clear') ] %}
+                        {% for param, uom, standard in condensate_params %}
+                        <tr>
+                            <td class="fw-bold" style="background-color: #f2f2f2;"><strong>{{ param }}</strong></td>
+                            <td>{{ uom }}</td>
+                            <td>{{ standard }}</td>
+                            <td><input type="text" name="power_plant_condensate_PP1_{{ param }}_value" class="form-control form-control-sm" value="{{ existing_data.get('power_plant_condensate_PP1_' + param, '') }}"></td>
+                            <td><input type="text" name="power_plant_condensate_PP2X55_{{ param }}_value" class="form-control form-control-sm" value="{{ existing_data.get('power_plant_condensate_PP2X55_' + param, '') }}"></td>
+                            <td><input type="text" name="power_plant_condensate_PH2X25_{{ param }}_value" class="form-control form-control-sm" value="{{ existing_data.get('power_plant_condensate_PH2X25_' + param, '') }}"></td>
+                            <td><input type="text" name="power_plant_condensate_PP3x25_{{ param }}_value" class="form-control form-control-sm" value="{{ existing_data.get('power_plant_condensate_PP3x25_' + param, '') }}"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <h5 class="mt-4 fw-bold">Industrial Cooling Water</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered text-center align-middle small">
+                    <thead class="table-primary">
+                        <tr>
+                            <th rowspan="2">Parameters</th><th rowspan="2">UOM</th><th rowspan="2">Standard</th>
+                            <th>PP1</th><th>PP2X55</th><th>PH2X25</th><th>PP3x25</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set icw_params = [ ('pH', 'pH', '7.0-8.0'), ('T.- Hard', 'ppm', '<1000'), ('Ca- Hard', 'ppm', '<600'), ('Mg- Hard', 'ppm', '<400'), ('Alk.', 'ppm', '<200'), ('Conductivity', 'ms/cm', '<5000'), ('TDS', 'ppm', '<2500'), ('Cl-', 'ppm', '<500'), ('Turbidity', 'NTU', '<20'), ('SiO2', 'ppm', '<150'), ('PO4-3', 'ppm', '<10'), ('COC', '--', '>04') ] %}
+                        {% for param, uom, standard in icw_params %}
+                        <tr>
+                            <td class="fw-bold" style="background-color: #f2f2f2;"><strong>{{ param }}</strong></td>
+                            <td>{{ uom }}</td>
+                            <td>{{ standard }}</td>
+                            <td><input type="text" name="power_plant_icw_PP1_{{ param }}_value" class="form-control form-control-sm" value="{{ existing_data.get('power_plant_icw_PP1_' + param, '') }}"></td>
+                            <td><input type="text" name="power_plant_icw_PP2X55_{{ param }}_value" class="form-control form-control-sm" value="{{ existing_data.get('power_plant_icw_PP2X55_' + param, '') }}"></td>
+                            <td><input type="text" name="power_plant_icw_PH2X25_{{ param }}_value" class="form-control form-control-sm" value="{{ existing_data.get('power_plant_icw_PH2X25_' + param, '') }}"></td>
+                            <td><input type="text" name="power_plant_icw_PP3x25_{{ param }}_value" class="form-control form-control-sm" value="{{ existing_data.get('power_plant_icw_PP3x25_' + param, '') }}"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

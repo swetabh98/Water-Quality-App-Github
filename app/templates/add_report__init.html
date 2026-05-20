@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Add Report{% endblock %}
+{% block content %}
+<h2>Add New Report</h2>
+<form method="POST" id="reportForm">
+    {{ form.hidden_tag() }}
+
+    <p>
+        {{ form.department.label }}<br>
+        {{ form.department(id='deptSelect', class_='form-control') }}
+    </p>
+
+    <p>
+        {{ form.equipment.label }}<br>
+        {% if form.equipment.choices %}
+            {{ form.equipment(class_='form-control') }}
+        {% else %}
+            <select disabled><option>Select department first</option></select>
+        {% endif %}
+    </p>
+
+    <p>{{ form.submit(value='Start Report') }}</p>
+</form>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const dept = document.getElementById("deptSelect");
+    if (dept) {
+        dept.addEventListener("change", function () {
+            console.log("📥 Submitting form...");
+            document.getElementById("reportForm").submit();
+        });
+    }
+});
+</script>
+{% endblock %}

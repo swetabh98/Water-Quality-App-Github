@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Plate Mill Report{% endblock %}</title>
+    <style>
+        body {
+            font-family: "Helvetica", sans-serif;
+            font-size: 12px;
+            margin: 20px;
+        }
+        h1, h2, h3 {
+            color: #003B70;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+        th, td {
+            border: 1px solid #aaa;
+            padding: 6px;
+            text-align: center;
+        }
+        th {
+            background-color: #003B70;
+            color: white;
+        }
+        .highlight {
+            background-color: #FFD2D2;
+            color: #900;
+        }
+    </style>
+</head>
+<body>
+
+{% block content %}{% endblock %}
+
+</body>
+</html>

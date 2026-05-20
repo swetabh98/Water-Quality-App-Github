@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<!-- ✅ Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+<!-- Background wrapper (new) -->
+<div style="
+    min-height:100vh;
+    background:
+      linear-gradient(rgba(0,0,0,.25), rgba(0,0,0,.25)),
+      url('{{ url_for('static', filename='images/Jindal_Centre_Raigarh.png') }}') center / cover no-repeat fixed;
+">
+  <div class="container d-flex justify-content-center align-items-center" style="min-height: 90vh;">
+      <div class="card shadow p-5" style="max-width: 500px; width: 100%; border-top: 5px solid #f47920;">
+          <div class="text-center mb-4">
+              <img src="{{ url_for('static', filename='images/jindal_steel_logo.png') }}" alt="Jindal Steel & Power" style="height: 60px;">
+              <h4 class="mt-2 text-primary" style="color: #002b5c !important;">Jindal Steel</h4>
+              <h5 class="text-secondary">Water Quality Portal</h5>
+          </div>
+
+          <h5 class="mb-4 text-center">Create an Account</h5>
+
+          <form method="POST">
+              {{ form.hidden_tag() }}
+
+              <div class="mb-3">
+                  {{ form.email.label(class="form-label") }}
+                  {{ form.email(class_="form-control", placeholder="Enter your email") }}
+              </div>
+
+              <div class="mb-3">
+                  {{ form.password.label(class="form-label") }}
+                  {{ form.password(class_="form-control", placeholder="Enter your password") }}
+              </div>
+
+              <div class="mb-3">
+                  {{ form.confirm.label(class="form-label") }}
+                  {{ form.confirm(class_="form-control", placeholder="Confirm password") }}
+              </div>
+
+              <div class="mb-3">
+                  {{ form.departments.label(class="form-label") }}
+                  <select id="department_select" name="departments" class="form-select select2" multiple="multiple" style="width: 100%;">
+                      {% for val, label in form.departments.choices %}
+                          <option value="{{ val }}" {% if form.departments.data and val in form.departments.data %}selected{% endif %}>{{ label }}</option>
+                      {% endfor %}
+                  </select>
+              </div>
+
+              <div class="d-grid">
+                  <button type="submit" class="btn" style="background-color: #002b5c; color: white;">Register</button>
+              </div>
+          </form>
+
+          <div class="text-center mt-3">
+              <p>Already have an account? <a href="{{ url_for('auth.login') }}" style="color: #f47920;">Login here</a></p>
+          </div>
+      </div>
+  </div>
+</div>
+
+<!-- ✅ Select2 JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#department_select').select2({
+            placeholder: "Select departments",
+            width: '100%'
+        });
+    });
+</script>
+{% endblock %}

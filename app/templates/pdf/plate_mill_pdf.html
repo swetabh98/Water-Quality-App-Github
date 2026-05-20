@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Plate Mill Water Quality Report</title>
+    <style>
+        @page { margin: 20px; }
+        body { font-family: Arial, sans-serif; font-size: 8px; color: #333; }
+        h1 { font-size: 16px; text-align: center; color: #003B70; margin-bottom: 5px; }
+        .report-meta { margin-bottom: 15px; font-size: 10px; }
+        .report-meta p { margin: 2px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #999; padding: 4px; text-align: center; vertical-align: middle; word-wrap: break-word; }
+        th { background-color: #003B70; color: white; font-weight: bold; }
+        .param-col { background-color: #F1F1F1; font-weight: bold; }
+        .limit-col { background-color: #FFF3ED; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>PERSONAL SERVICE REPORT - PLATE MILL DIVISION</h1>
+
+    <div class="report-meta">
+        <p><strong>Report ID:</strong> {{ report.id }} | <strong>Date:</strong> {{ report.sampling_time.strftime('%d.%m.%Y') }}</p>
+        <p><strong>Department:</strong> {{ report.department.name }} | <strong>Submitted By:</strong> {{ report.user.email }}</p>
+    </div>
+
+    {% set data = processed_data %}
+    {% set params = ['pH', 'Conductivity', 'TDS', 'TH', 'Ca-H', 'Mg-H', 'Chloride', 'P-Alkalinity', 'M-Alkalinity', 'Silica', 'O-Phosphate', 'TSS', 'Turbidity', 'Iron', 'NITRITE', 'COC'] %}
+    {% set units = { 'pH': '-', 'Conductivity': 'µS/cm', 'TDS': 'ppm', 'TH': 'ppm as CaCO3', 'Ca-H': 'ppm as CaCO3', 'Mg-H': 'ppm as CaCO3', 'Chloride': 'ppm', 'P-Alkalinity': 'ppm as CaCO3', 'M-Alkalinity': 'ppm as CaCO3', 'Silica': 'ppm as SiO2', 'O-Phosphate': 'ppm as PO4', 'TSS': 'ppm', 'Turbidity': 'NTU', 'Iron': 'ppm as Fe', 'NITRITE': 'ppm', 'COC': '-' } %}
+    
+    <table>
+        <thead>
+            <tr>
+                <th rowspan="2" style="vertical-align: middle; width: 12%;">Parameter</th>
+                <th rowspan="2" style="vertical-align: middle; width: 8%;">Unit</th>
+                <th colspan="3">Makeup Water</th>
+                <th colspan="3">DCW</th>
+                <th colspan="2">FCW</th>
+                <th colspan="2">ICW</th>
+                <th colspan="2">RHF Softwater</th>
+            </tr>
+            <tr>
+                <th>Limit Pond 07</th><th>Pond-7 Actual</th><th>Makeup Tank</th>
+                <th>Limit</th><th>DCW Actual</th><th>ACC Actual</th>
+                <th>Limit</th><th>Actual</th>
+                <th>Limit</th><th>Actual</th>
+                <th>Limit</th><th>Actual</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p_key in params %}
+            <tr>
+                <td class="param-col">{{ p_key }}</td>
+                <td class="param-col">{{ units[p_key] }}</td>
+                
+                <td class="limit-col">{{ data.get(p_key, {}).get('POND07_LIMIT', {}).get('range', '-') }}</td>
+                <td>{{ data.get(p_key, {}).get('POND07_ACTUAL', {}).get('value', '-') }}</td>
+                <td>{{ data.get(p_key, {}).get('MAKEUP_TANK', {}).get('value', '-') }}</td>
+                
+                <td class="limit-col">{{ data.get(p_key, {}).get('DCW_LIMIT', {}).get('range', '-') }}</td>
+                <td>{{ data.get(p_key, {}).get('DCW_ACTUAL', {}).get('value', '-') }}</td>
+                <td>{{ data.get(p_key, {}).get('ACC_ACTUAL', {}).get('value', '-') }}</td>
+
+                <td class="limit-col">{{ data.get(p_key, {}).get('FCW_LIMIT', {}).get('range', '-') }}</td>
+                <td>{{ data.get(p_key, {}).get('FCW_ACTUAL', {}).get('value', '-') }}</td>
+
+                <td class="limit-col">{{ data.get(p_key, {}).get('ICW_LIMIT', {}).get('range', '-') }}</td>
+                <td>{{ data.get(p_key, {}).get('ICW_ACTUAL', {}).get('value', '-') }}</td>
+                
+                <td class="limit-col">{{ data.get(p_key, {}).get('RHF_LIMIT', {}).get('range', '-') }}</td>
+                <td>{{ data.get(p_key, {}).get('RHF_ACTUAL', {}).get('value', '-') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>

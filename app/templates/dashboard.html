@@ -1,0 +1,1158 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4 dashboard-page">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 dashboard-title-row">
+        <div class="d-flex align-items-center">
+            <img src="{{ url_for('static', filename='images/jindal_steel_logo.png') }}" alt="Jindal Steel & Power" height="40" class="me-3 dashboard-title-logo">
+            <div>
+                <h2 class="text-brand">Department-Wise Water Quality Dashboard</h2>
+                <div class="dashboard-subtitle">Compliance, outliers, trends, systems, alerts, and submission health across all departments.</div>
+            </div>
+        </div>
+        <form method="get" action="{{ url_for('reports.dashboard') }}" class="dashboard-filter-form">
+            <div class="filter-field">
+                <label for="start_date">Start date</label>
+                <input type="date" id="start_date" name="start_date" value="{{ start_date }}" class="form-control">
+            </div>
+            <div class="filter-field">
+                <label for="end_date">End date</label>
+                <input type="date" id="end_date" name="end_date" value="{{ end_date }}" class="form-control">
+            </div>
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-brand-filter">Apply</button>
+                <a href="{{ url_for('reports.dashboard') }}" class="btn btn-brand-reset">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="row g-3 mb-4">
+        {% for card in kpi_cards %}
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="dashboard-kpi-card h-100">
+                <div class="kpi-label">{{ card.label }}</div>
+                <div class="kpi-value">{{ card.value }}</div>
+                <div class="kpi-hint">{{ card.hint }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow border-0 dashboard-panel h-100">
+                <div class="card-body">
+                    <div class="section-heading-wrap">
+                        <h5 class="section-title">Best Performing Departments</h5>
+                        <span class="section-pill good">Top compliance</span>
+                    </div>
+                    {% if ranking_cards.best %}
+                    <div class="ranking-list">
+                        {% for row in ranking_cards.best %}
+                        <div class="ranking-item">
+                            <span class="ranking-rank">{{ loop.index }}</span>
+                            <span class="ranking-name">{{ row.department }}</span>
+                            <span class="ranking-score">{{ row.compliance }}%</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">No range-checked readings are available for this period.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow border-0 dashboard-panel h-100">
+                <div class="card-body">
+                    <div class="section-heading-wrap">
+                        <h5 class="section-title">Needs Attention</h5>
+                        <span class="section-pill danger">Lowest compliance</span>
+                    </div>
+                    {% if ranking_cards.attention %}
+                    <div class="ranking-list">
+                        {% for row in ranking_cards.attention %}
+                        <div class="ranking-item attention">
+                            <span class="ranking-rank">{{ loop.index }}</span>
+                            <span class="ranking-name">{{ row.department }}</span>
+                            <span class="ranking-score">{{ row.compliance }}%</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">No range-checked readings are available for this period.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow border-0 dashboard-panel mb-4">
+        <div class="card-body">
+            <div class="section-heading-wrap">
+                <div>
+                    <h5 class="section-title">Department Compliance Scorecard</h5>
+                    <div class="section-note">Risk level: Green = 95% and above, Orange = 90% to 94.9%, Red = below 90%.</div>
+                </div>
+                <span class="section-pill neutral">Main comparison view</span>
+            </div>
+            <div class="table-responsive dashboard-table-wrap">
+                <table class="table dashboard-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Department</th>
+                            <th class="text-end">Reports</th>
+                            <th class="text-end">Readings</th>
+                            <th class="text-end">Checked</th>
+                            <th class="text-end">In Range</th>
+                            <th class="text-end">Outliers</th>
+                            <th class="text-end">Compliance %</th>
+                            <th>Risk Level</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in scorecard %}
+                        <tr class="scorecard-row {{ row.risk_class }}">
+                            <td class="fw-bold">{{ row.department }}</td>
+                            <td class="text-end">{{ row.reports }}</td>
+                            <td class="text-end">{{ row.readings }}</td>
+                            <td class="text-end">{{ row.checked }}</td>
+                            <td class="text-end">{{ row.in_range }}</td>
+                            <td class="text-end outlier-text">{{ row.outliers }}</td>
+                            <td class="text-end fw-bold">{{ row.compliance }}%</td>
+                            <td><span class="risk-pill {{ row.risk_class }}">{{ row.risk_level }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="empty-cell">No departments found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow border-0 dashboard-chart-card h-100">
+                <div class="card-body">
+                    <div class="section-heading-wrap">
+                        <h5 class="card-title text-brand">Outlier Count by Department</h5>
+                        <span class="section-pill danger">Failed readings</span>
+                    </div>
+                    <div class="chart-shell"><canvas id="outlierByDepartmentChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow border-0 dashboard-chart-card h-100">
+                <div class="card-body">
+                    <div class="section-heading-wrap">
+                        <h5 class="card-title text-brand">Compliance % by Department</h5>
+                        <span class="section-pill good">Ranking</span>
+                    </div>
+                    {% if compliance_chart.labels %}
+                    <div class="chart-shell"><canvas id="complianceByDepartmentChart"></canvas></div>
+                    {% else %}
+                    <div class="empty-state tall">No range-checked readings are available for this chart.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow border-0 dashboard-panel mb-4">
+        <div class="card-body">
+            <div class="section-heading-wrap">
+                <div>
+                    <h5 class="section-title">Parameter Failure Heatmap</h5>
+                    <div class="section-note">Rows are departments, columns are parameters, and cells show outlier counts.</div>
+                </div>
+                <span class="section-pill danger">Root-cause matrix</span>
+            </div>
+            <div class="table-responsive dashboard-table-wrap heatmap-wrap">
+                <table class="table dashboard-table heatmap-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Department</th>
+                            {% for param in heatmap_params %}
+                            <th class="text-center">{{ param }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in heatmap_data %}
+                        <tr>
+                            <td class="fw-bold heatmap-dept">{{ row.department }}</td>
+                            {% for count in row['values'] %}
+                                {% set heat_class = 'heat-zero' if count == 0 else ('heat-low' if count <= 2 else ('heat-medium' if count <= 5 else 'heat-high')) %}
+                                <td class="text-center heat-cell {{ heat_class }}">{{ count }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="{{ 1 + (heatmap_params|length) }}" class="empty-cell">No heatmap data available.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card shadow border-0 dashboard-chart-card h-100">
+                <div class="card-body">
+                    <div class="section-heading-wrap">
+                        <h5 class="card-title text-brand">Worst 10 Systems / Locations</h5>
+                        <span class="section-pill danger">By outliers</span>
+                    </div>
+                    {% if worst_system_chart.labels %}
+                    <div class="chart-shell large"><canvas id="worstSystemsChart"></canvas></div>
+                    {% else %}
+                    <div class="empty-state tall">No system-level outliers found for this period.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card shadow border-0 dashboard-panel h-100">
+                <div class="card-body">
+                    <div class="section-heading-wrap">
+                        <h5 class="section-title">Worst 10 Systems / Locations Table</h5>
+                        <span class="section-pill neutral">Action list</span>
+                    </div>
+                    <div class="table-responsive dashboard-table-wrap compact-table">
+                        <table class="table dashboard-table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Department</th>
+                                    <th>System</th>
+                                    <th class="text-end">Outliers</th>
+                                    <th>Worst Parameter</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in worst_systems %}
+                                <tr>
+                                    <td class="fw-bold">{{ loop.index }}</td>
+                                    <td>{{ row.department }}</td>
+                                    <td>{{ row.system }}</td>
+                                    <td class="text-end outlier-text">{{ row.outliers }}</td>
+                                    <td class="fw-bold">{{ row.worst_parameter }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="empty-cell">No system-level outliers found for this period.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow border-0 dashboard-panel mb-4">
+        <div class="card-body">
+            <div class="section-heading-wrap">
+                <div>
+                    <h5 class="section-title">Latest Range Violations</h5>
+                    <div class="section-note">Uses the same range-checking logic as the alert email system.</div>
+                </div>
+                <span class="section-pill danger">Operator panel</span>
+            </div>
+            <div class="table-responsive dashboard-table-wrap compact-table">
+                <table class="table dashboard-table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Department</th>
+                            <th>System</th>
+                            <th>Parameter</th>
+                            <th class="text-end">Value</th>
+                            <th>Allowed Range</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for alert in latest_alerts %}
+                        <tr>
+                            <td class="fw-bold">{{ alert.time }}</td>
+                            <td>{{ alert.department }}</td>
+                            <td>{{ alert.system }}</td>
+                            <td class="fw-bold">{{ alert.parameter }}</td>
+                            <td class="text-end outlier-text">{{ alert.value }}</td>
+                            <td>{{ alert.range }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="empty-cell">No range violations found for this period.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow border-0 dashboard-panel mb-4">
+        <div class="card-body">
+            <div class="section-heading-wrap">
+                <div>
+                    <h5 class="section-title">Trend Charts for Common Parameters</h5>
+                    <div class="section-note">Daily average trend by department for pH, Conductivity, TDS, TH, Turbidity, Iron, and COC where data exists.</div>
+                </div>
+                <span class="section-pill neutral">Time trend</span>
+            </div>
+            {% if trend_charts %}
+            <div class="row g-4">
+                {% for param_name, data in trend_charts.items() %}
+                <div class="col-xl-6">
+                    <div class="mini-chart-card">
+                        <h6>{{ param_name }} Trend by Department</h6>
+                        <div class="chart-shell"><canvas id="trendChart{{ loop.index }}"></canvas></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">No trend data is available for the common parameters in this period.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card shadow border-0 dashboard-panel h-100">
+                <div class="card-body">
+                    <div class="section-heading-wrap">
+                        <div>
+                            <h5 class="section-title">Parameter Stability KPI</h5>
+                            <div class="section-note">Spikes are readings more than 2 standard deviations from that parameter average.</div>
+                        </div>
+                        <span class="section-pill neutral">Stability</span>
+                    </div>
+                    <div class="table-responsive dashboard-table-wrap compact-table">
+                        <table class="table dashboard-table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th class="text-end">Avg</th>
+                                    <th class="text-end">Min</th>
+                                    <th class="text-end">Max</th>
+                                    <th class="text-end">Std Dev</th>
+                                    <th class="text-end">Spikes</th>
+                                    <th class="text-end">Outliers</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in stability_rows %}
+                                <tr>
+                                    <td class="fw-bold">{{ row.parameter }}</td>
+                                    <td class="text-end">{{ row.avg }}</td>
+                                    <td class="text-end">{{ row.min }}</td>
+                                    <td class="text-end">{{ row.max }}</td>
+                                    <td class="text-end">{{ row.std_dev }}</td>
+                                    <td class="text-end">{{ row.spikes }}</td>
+                                    <td class="text-end outlier-text">{{ row.outliers }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="empty-cell">No numeric parameter stability data available.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card shadow border-0 dashboard-panel h-100">
+                <div class="card-body">
+                    <div class="section-heading-wrap">
+                        <div>
+                            <h5 class="section-title">Daily Report Submission Compliance</h5>
+                            <div class="section-note">Expected reports are calculated as one report per department per calendar day in the selected period.</div>
+                        </div>
+                        <span class="section-pill neutral">Submission health</span>
+                    </div>
+                    <div class="table-responsive dashboard-table-wrap compact-table">
+                        <table class="table dashboard-table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Department</th>
+                                    <th class="text-end">Expected</th>
+                                    <th class="text-end">Submitted</th>
+                                    <th class="text-end">Missing</th>
+                                    <th class="text-end">Submission %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in submission_compliance %}
+                                <tr>
+                                    <td class="fw-bold">{{ row.department }}</td>
+                                    <td class="text-end">{{ row.expected }}</td>
+                                    <td class="text-end">{{ row.submitted }}</td>
+                                    <td class="text-end outlier-text">{{ row.missing }}</td>
+                                    <td class="text-end fw-bold">{{ row.submission_pct }}%</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="empty-cell">No submission data available.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow border-0 dashboard-chart-card h-100">
+                <div class="card-body">
+                    <div class="section-heading-wrap">
+                        <h5 class="card-title text-brand">Daily Report Counts</h5>
+                        <span class="section-pill neutral">Daily line chart</span>
+                    </div>
+                    {% if daily_report_chart.labels and daily_report_chart.datasets %}
+                    <div class="chart-shell"><canvas id="dailyReportCountsChart"></canvas></div>
+                    {% else %}
+                    <div class="empty-state tall">No daily report count data available.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow border-0 dashboard-chart-card h-100">
+                <div class="card-body">
+                    <div class="section-heading-wrap">
+                        <h5 class="card-title text-brand">Department Submission %</h5>
+                        <span class="section-pill neutral">Submission bar chart</span>
+                    </div>
+                    <div class="chart-shell"><canvas id="submissionPercentChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow border-0 dashboard-panel mb-4">
+        <div class="card-body">
+            <div class="section-heading-wrap">
+                <div>
+                    <h5 class="section-title">Department-Wise Parameter Averages</h5>
+                    <div class="section-note">Existing average-by-department charts are retained for continuity.</div>
+                </div>
+                <span class="section-pill neutral">Existing view</span>
+            </div>
+            {% if chart_data %}
+            <div class="row g-4">
+                {% for param_name, data in chart_data.items() %}
+                <div class="col-xl-6">
+                    <div class="mini-chart-card">
+                        <h6>{{ param_name }}</h6>
+                        <div class="chart-shell"><canvas id="avgChart{{ loop.index }}"></canvas></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">No numeric parameter averages are available for this period.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .dashboard-page {
+        color: #2f3430;
+    }
+
+    .dashboard-title-row {
+        padding: 18px 20px;
+        background:
+            linear-gradient(135deg, #ffffff 0%, #fff1e6 48%, #eef9ec 100%);
+        border: 1px solid rgba(94, 95, 94, 0.16);
+        border-radius: 22px;
+        box-shadow: 0 14px 34px rgba(94, 95, 94, 0.10);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dashboard-title-row::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 7px;
+        background: linear-gradient(180deg, #f47b20, #ffffff, #4cb848);
+    }
+
+    .dashboard-title-logo {
+        background: #ffffff;
+        padding: 6px;
+        border-radius: 12px;
+        border: 1px solid rgba(94, 95, 94, 0.14);
+        position: relative;
+        z-index: 1;
+    }
+
+    .text-brand {
+        color: #5e5f5e;
+        font-weight: 900;
+        margin-bottom: 0;
+        letter-spacing: -0.03em;
+        position: relative;
+        z-index: 1;
+    }
+
+    .dashboard-subtitle {
+        color: #6d706d;
+        font-weight: 700;
+        font-size: 0.92rem;
+        margin-top: 4px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .dashboard-filter-form {
+        display: flex;
+        align-items: end;
+        gap: 10px;
+        flex-wrap: wrap;
+        position: relative;
+        z-index: 1;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid rgba(94, 95, 94, 0.12);
+        border-radius: 18px;
+        padding: 12px;
+    }
+
+    .filter-field label {
+        display: block;
+        font-size: 0.76rem;
+        font-weight: 900;
+        color: #6d706d;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 4px;
+    }
+
+    .filter-field .form-control {
+        border-radius: 12px;
+        border: 1px solid rgba(94, 95, 94, 0.18);
+        font-weight: 700;
+        color: #5e5f5e;
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-brand-filter,
+    .btn-brand-reset {
+        border-radius: 999px;
+        padding: 8px 16px;
+        font-weight: 900;
+        border: 1px solid transparent;
+    }
+
+    .btn-brand-filter {
+        background: linear-gradient(135deg, #f47b20, #d68e5e);
+        color: #ffffff;
+    }
+
+    .btn-brand-reset {
+        background: #ffffff;
+        color: #5e5f5e;
+        border-color: rgba(94, 95, 94, 0.18);
+    }
+
+    .dashboard-kpi-card,
+    .dashboard-panel,
+    .dashboard-chart-card,
+    .mini-chart-card {
+        background:
+            radial-gradient(circle at top right, rgba(244, 123, 32, 0.10), transparent 16rem),
+            linear-gradient(180deg, #ffffff, #fffdfa);
+        border: 1px solid rgba(94, 95, 94, 0.16) !important;
+        border-radius: 22px;
+        box-shadow: 0 14px 34px rgba(94, 95, 94, 0.09);
+    }
+
+    .dashboard-kpi-card {
+        padding: 18px;
+        min-height: 142px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dashboard-kpi-card::after {
+        content: "";
+        position: absolute;
+        right: -34px;
+        top: -34px;
+        width: 96px;
+        height: 96px;
+        border-radius: 999px;
+        background: rgba(76, 184, 72, 0.12);
+    }
+
+    .kpi-label {
+        color: #6d706d;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        font-size: 0.76rem;
+    }
+
+    .kpi-value {
+        color: #5e5f5e;
+        font-size: clamp(1.45rem, 2vw, 2.1rem);
+        font-weight: 950;
+        line-height: 1.05;
+        margin: 12px 0 10px 0;
+        word-break: break-word;
+    }
+
+    .kpi-hint {
+        color: #6d706d;
+        font-size: 0.88rem;
+        font-weight: 700;
+        line-height: 1.35;
+    }
+
+    .dashboard-panel .card-body,
+    .dashboard-chart-card .card-body {
+        padding: 20px;
+    }
+
+    .dashboard-chart-card .card-title,
+    .section-title {
+        color: #5e5f5e !important;
+        font-weight: 900;
+        margin-bottom: 0;
+        letter-spacing: -0.02em;
+    }
+
+    .section-heading-wrap {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .section-note {
+        color: #6d706d;
+        font-size: 0.86rem;
+        font-weight: 700;
+        margin-top: 4px;
+    }
+
+    .section-pill {
+        display: inline-flex;
+        align-items: center;
+        white-space: nowrap;
+        border-radius: 999px;
+        padding: 7px 11px;
+        font-size: 0.72rem;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        border: 1px solid rgba(94, 95, 94, 0.16);
+        color: #5e5f5e;
+        background: #ffffff;
+    }
+
+    .section-pill.good {
+        color: #2f7d37;
+        background: #eef9ec;
+        border-color: rgba(76, 184, 72, 0.24);
+    }
+
+    .section-pill.danger {
+        color: #8c3f4c;
+        background: #fff2f4;
+        border-color: rgba(140, 63, 76, 0.24);
+    }
+
+    .section-pill.neutral {
+        color: #466684;
+        background: #f5f8fb;
+        border-color: rgba(70, 102, 132, 0.20);
+    }
+
+    .ranking-list {
+        display: grid;
+        gap: 10px;
+    }
+
+    .ranking-item {
+        display: grid;
+        grid-template-columns: 42px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+        padding: 13px 14px;
+        background: #ffffff;
+        border: 1px solid rgba(76, 184, 72, 0.18);
+        border-radius: 16px;
+    }
+
+    .ranking-item.attention {
+        border-color: rgba(140, 63, 76, 0.18);
+    }
+
+    .ranking-rank {
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #eef9ec;
+        color: #2f7d37;
+        font-weight: 950;
+    }
+
+    .ranking-item.attention .ranking-rank {
+        background: #fff2f4;
+        color: #8c3f4c;
+    }
+
+    .ranking-name {
+        font-weight: 900;
+        color: #5e5f5e;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .ranking-score {
+        font-weight: 950;
+        color: #5e5f5e;
+    }
+
+    .dashboard-table-wrap {
+        border: 1px solid rgba(94, 95, 94, 0.14);
+        border-radius: 18px;
+        overflow-x: auto;
+        overflow-y: visible;
+        max-width: 100%;
+        background: #ffffff;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .dashboard-table-wrap.compact-table,
+    .dashboard-table-wrap.heatmap-wrap {
+        overflow-x: auto;
+        overflow-y: auto;
+    }
+
+    .dashboard-table {
+        color: #2f3430;
+        width: 100%;
+        min-width: 760px;
+    }
+
+    .compact-table .dashboard-table {
+        min-width: 900px;
+    }
+
+    .heatmap-table {
+        min-width: max-content;
+    }
+
+    .dashboard-table thead th {
+        background: linear-gradient(135deg, #5e5f5e, #466684);
+        color: #ffffff;
+        border: 0;
+        font-size: 0.76rem;
+        font-weight: 900;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        padding: 13px 14px;
+    }
+
+    .dashboard-table tbody td {
+        border-color: rgba(94, 95, 94, 0.12);
+        padding: 12px 14px;
+        font-weight: 650;
+        vertical-align: middle;
+    }
+
+    .compact-table .dashboard-table thead th {
+        padding: 11px 12px;
+        font-size: 0.72rem;
+    }
+
+    .compact-table .dashboard-table tbody td {
+        padding: 10px 12px;
+        font-size: 0.92rem;
+    }
+
+    .outlier-text {
+        color: #8c3f4c;
+        font-weight: 950 !important;
+    }
+
+    .risk-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        min-width: 84px;
+        padding: 6px 10px;
+        font-size: 0.78rem;
+        font-weight: 900;
+        border: 1px solid rgba(94, 95, 94, 0.14);
+    }
+
+    .risk-pill.risk-low {
+        background: #eef9ec;
+        color: #2f7d37;
+        border-color: rgba(76, 184, 72, 0.24);
+    }
+
+    .risk-pill.risk-medium {
+        background: #fff1e6;
+        color: #b65b15;
+        border-color: rgba(244, 123, 32, 0.26);
+    }
+
+    .risk-pill.risk-high {
+        background: #fff2f4;
+        color: #8c3f4c;
+        border-color: rgba(140, 63, 76, 0.28);
+    }
+
+    .risk-pill.risk-none {
+        background: #f3f4f2;
+        color: #6d706d;
+    }
+
+    .scorecard-row.risk-low td:first-child {
+        box-shadow: inset 5px 0 0 #4cb848;
+    }
+
+    .scorecard-row.risk-medium td:first-child {
+        box-shadow: inset 5px 0 0 #f47b20;
+    }
+
+    .scorecard-row.risk-high td:first-child {
+        box-shadow: inset 5px 0 0 #8c3f4c;
+    }
+
+    .chart-shell {
+        position: relative;
+        width: 100%;
+        height: 330px;
+    }
+
+    .chart-shell.large {
+        height: 420px;
+    }
+
+    .mini-chart-card {
+        padding: 16px;
+        height: 100%;
+    }
+
+    .mini-chart-card h6 {
+        margin: 0 0 12px 0;
+        color: #5e5f5e;
+        font-weight: 900;
+    }
+
+    .heatmap-wrap {
+        max-height: 560px;
+        overflow: auto;
+    }
+
+    .heatmap-table th,
+    .heatmap-table td {
+        white-space: nowrap;
+    }
+
+    .heatmap-dept {
+        background: #fffdfa;
+        position: sticky;
+        left: 0;
+        z-index: 1;
+    }
+
+    .heatmap-table th,
+    .heatmap-table td {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .dashboard-page .heat-cell,
+    .heat-cell {
+        display: table-cell !important;
+        min-width: 92px;
+        font-weight: 950 !important;
+        border-left: 1px solid rgba(94, 95, 94, 0.08);
+    }
+
+    .heat-zero {
+        background: #f7f8f6;
+        color: #8a8d8a;
+    }
+
+    .heat-low {
+        background: #eef9ec;
+        color: #2f7d37;
+    }
+
+    .heat-medium {
+        background: #fff1e6;
+        color: #b65b15;
+    }
+
+    .heat-high {
+        background: #fff2f4;
+        color: #8c3f4c;
+    }
+
+    .empty-state,
+    .empty-cell {
+        color: #6d706d;
+        font-weight: 800;
+        text-align: center;
+        padding: 24px;
+        background: #ffffff;
+        border-radius: 16px;
+    }
+
+    .empty-state.tall {
+        min-height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px dashed rgba(94, 95, 94, 0.20);
+    }
+
+    @media (max-width: 767.98px) {
+        .dashboard-filter-form {
+            width: 100%;
+        }
+
+        .filter-field,
+        .filter-field .form-control,
+        .filter-actions,
+        .filter-actions .btn {
+            width: 100%;
+        }
+
+        .section-heading-wrap {
+            flex-direction: column;
+        }
+
+        .chart-shell {
+            height: 300px;
+        }
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const dashboardPalette = [
+        { bg: 'rgba(244, 123, 32, 0.72)', border: 'rgba(244, 123, 32, 1)' },
+        { bg: 'rgba(76, 184, 72, 0.72)', border: 'rgba(76, 184, 72, 1)' },
+        { bg: 'rgba(94, 95, 94, 0.68)', border: 'rgba(94, 95, 94, 1)' },
+        { bg: 'rgba(140, 63, 76, 0.68)', border: 'rgba(140, 63, 76, 1)' },
+        { bg: 'rgba(140, 165, 93, 0.72)', border: 'rgba(140, 165, 93, 1)' },
+        { bg: 'rgba(70, 102, 132, 0.70)', border: 'rgba(70, 102, 132, 1)' },
+        { bg: 'rgba(214, 142, 94, 0.72)', border: 'rgba(214, 142, 94, 1)' },
+        { bg: 'rgba(140, 140, 107, 0.72)', border: 'rgba(140, 140, 107, 1)' }
+    ];
+
+    Chart.defaults.color = '#5e5f5e';
+    Chart.defaults.font.family = "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+
+    const baseTooltip = {
+        enabled: true,
+        backgroundColor: '#5e5f5e',
+        titleColor: '#ffffff',
+        bodyColor: '#ffffff',
+        borderColor: 'rgba(244, 123, 32, 0.35)',
+        borderWidth: 1,
+        padding: 12,
+        cornerRadius: 10
+    };
+
+    function paletteBg(labels) {
+        return labels.map((_, i) => dashboardPalette[i % dashboardPalette.length].bg);
+    }
+
+    function paletteBorder(labels) {
+        return labels.map((_, i) => dashboardPalette[i % dashboardPalette.length].border);
+    }
+
+    function makeVerticalBarChart(canvasId, chartData, label, yTitle) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas || !chartData || !chartData.labels || chartData.labels.length === 0) return;
+        new Chart(canvas.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    label: label,
+                    data: chartData.values,
+                    backgroundColor: paletteBg(chartData.labels),
+                    borderColor: paletteBorder(chartData.labels),
+                    borderWidth: 2,
+                    borderRadius: 10,
+                    borderSkipped: false,
+                    hoverBorderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: baseTooltip },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: yTitle, color: '#5e5f5e', font: { weight: '800' } },
+                        grid: { color: 'rgba(94, 95, 94, 0.14)' },
+                        ticks: { color: '#6d706d', precision: 0, font: { weight: '600' } }
+                    },
+                    x: {
+                        ticks: { autoSkip: false, maxRotation: 45, minRotation: 0, color: '#6d706d', font: { weight: '700' } },
+                        grid: { color: 'rgba(94, 95, 94, 0.10)' }
+                    }
+                }
+            }
+        });
+    }
+
+    function makeHorizontalBarChart(canvasId, chartData, label, xTitle, suggestedMax) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas || !chartData || !chartData.labels || chartData.labels.length === 0) return;
+        new Chart(canvas.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    label: label,
+                    data: chartData.values,
+                    backgroundColor: paletteBg(chartData.labels),
+                    borderColor: paletteBorder(chartData.labels),
+                    borderWidth: 2,
+                    borderRadius: 10,
+                    borderSkipped: false,
+                    hoverBorderWidth: 3
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: baseTooltip },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        suggestedMax: suggestedMax,
+                        title: { display: true, text: xTitle, color: '#5e5f5e', font: { weight: '800' } },
+                        grid: { color: 'rgba(94, 95, 94, 0.14)' },
+                        ticks: { color: '#6d706d', font: { weight: '600' } }
+                    },
+                    y: {
+                        ticks: { color: '#6d706d', font: { weight: '700' } },
+                        grid: { color: 'rgba(94, 95, 94, 0.10)' }
+                    }
+                }
+            }
+        });
+    }
+
+    function makeLineChart(canvasId, chartData, title) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas || !chartData || !chartData.labels || chartData.labels.length === 0) return;
+        new Chart(canvas.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: chartData.labels,
+                datasets: (chartData.datasets || []).map((series, i) => ({
+                    label: series.label,
+                    data: series.data,
+                    borderColor: dashboardPalette[i % dashboardPalette.length].border,
+                    backgroundColor: dashboardPalette[i % dashboardPalette.length].bg,
+                    tension: 0.32,
+                    fill: false,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    borderWidth: 2,
+                    spanGaps: true
+                }))
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, font: { weight: '700' } } },
+                    tooltip: baseTooltip,
+                    title: { display: false, text: title }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: { color: 'rgba(94, 95, 94, 0.14)' },
+                        ticks: { color: '#6d706d', font: { weight: '600' } }
+                    },
+                    x: {
+                        ticks: { color: '#6d706d', maxRotation: 45, minRotation: 0, font: { weight: '700' } },
+                        grid: { color: 'rgba(94, 95, 94, 0.10)' }
+                    }
+                }
+            }
+        });
+    }
+
+    const outlierChart = {{ outlier_chart | tojson }};
+    const complianceChart = {{ compliance_chart | tojson }};
+    const worstSystemChart = {{ worst_system_chart | tojson }};
+    const dailyReportChart = {{ daily_report_chart | tojson }};
+    const submissionChart = {{ submission_chart | tojson }};
+
+    makeVerticalBarChart('outlierByDepartmentChart', outlierChart, 'Outliers', 'Out-of-range readings');
+    makeHorizontalBarChart('complianceByDepartmentChart', complianceChart, 'Compliance %', 'Compliance %', 100);
+    makeHorizontalBarChart('worstSystemsChart', worstSystemChart, 'Outliers', 'Out-of-range readings', undefined);
+    makeLineChart('dailyReportCountsChart', dailyReportChart, 'Daily report counts');
+    makeVerticalBarChart('submissionPercentChart', submissionChart, 'Submission %', 'Submission %');
+
+    const trendCharts = {{ trend_charts | tojson }};
+    const trendCanvasConfig = [
+        {% for param_name, data in trend_charts.items() %}
+        { id: 'trendChart{{ loop.index }}', name: {{ param_name | tojson }} }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+    trendCanvasConfig.forEach(function (item) {
+        makeLineChart(item.id, trendCharts[item.name], item.name + ' trend by department');
+    });
+
+    const averageCharts = {{ chart_data | tojson }};
+    const averageCanvasConfig = [
+        {% for param_name, data in chart_data.items() %}
+        { id: 'avgChart{{ loop.index }}', name: {{ param_name | tojson }} }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+    averageCanvasConfig.forEach(function (item) {
+        const data = averageCharts[item.name];
+        makeVerticalBarChart(item.id, data, item.name + ' (Avg)', item.name);
+    });
+});
+</script>
+{% endblock %}

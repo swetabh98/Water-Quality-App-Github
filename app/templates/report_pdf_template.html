@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Water Quality Report - Jindal Steel & Power</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 10px; margin: 20px; color: #333; }
+        header { text-align: center; border-bottom: 2px solid #002b5c; padding-bottom: 10px; margin-bottom: 15px; }
+        h1 { font-size: 18px; color: #002b5c; margin: 0; }
+        h2 { background-color: #e6f0fa; padding: 5px; color: #002b5c; font-size: 14px; margin-top: 20px; border-left: 4px solid #f47920; }
+        .report-meta { margin-bottom: 20px; font-size: 11px; }
+        .report-meta p { margin: 2px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; page-break-inside: auto; }
+        tr { page-break-inside: avoid; page-break-after: auto; }
+        th, td { border: 1px solid #999; padding: 4px; text-align: center; word-wrap: break-word; }
+        th { background-color: #d8e6f2; font-weight: bold; }
+        footer { position: fixed; bottom: 10px; left: 0; right: 0; text-align: center; font-size: 9px; color: #555; }
+        .page-number:after { content: counter(page); }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Water Quality Report</h1>
+</header>
+
+<div class="report-meta">
+    <p><strong>Report ID:</strong> {{ report.id }}</p>
+    <p><strong>Department:</strong> {{ report.department.name }}</p>
+    <p><strong>Submitted By:</strong> {{ report.user.email }}</p>
+    <p><strong>Sample Time:</strong> {{ report.sampling_time.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+</div>
+
+{% for section in report.sections %}
+    <h2>{{ section.sheet_name }}</h2>
+    {% if section.sheet_name == 'ICW & DCW Raw Water' %}
+        {% include 'view_report_tabs/icw_dcw_view.html' %}
+    {% elif section.sheet_name == 'CCM & EAF SW' %}
+        {% include 'view_report_tabs/ccm_eaf_view.html' %}
+    {% elif section.sheet_name == 'Softwater Make-up' %}
+         {% include 'view_report_tabs/softwater_makeup_view.html' %}
+    {% elif section.sheet_name == 'Spray O&G' %}
+        {% include 'view_report_tabs/spray_og_view.html' %}
+    {% elif section.sheet_name == 'HRSCC Report' %}
+        {% include 'view_report_tabs/hrscc_report_view.html' %}
+    {% endif %}
+{% endfor %}
+
+<footer>
+    Jindal Steel & Power — Water Quality Report | Page <span class="page-number"></span>
+</footer>
+
+</body>
+</html>

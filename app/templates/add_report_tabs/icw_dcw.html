@@ -1,0 +1,61 @@
+<div style="overflow-x: auto;" class="w-100">
+    <table class="table table-bordered text-center align-middle small w-100">
+        <thead class="table-primary">
+            <tr>
+                <th class="bg-secondary text-white">System</th>
+                <th>pH<br><small>-</small></th>
+                <th>TH<br><small>ppm as CaCO3</small></th>
+                <th>CaH<br><small>ppm as CaCO3</small></th>
+                <th>MgH<br><small>= TH - CaH</small></th>
+                <th>P-Alk.<br><small>ppm as CaCO3</small></th>
+                <th>M-Alk.<br><small>ppm as CaCO3</small></th>
+                <th>Chloride<br><small>ppm</small></th>
+                <th>Conductivity<br><small>µS/cm</small></th>
+                <th>Turbidity<br><small>NTU</small></th>
+                <th>TSS<br><small>ppm</small></th>
+                <th>Iron<br><small>ppm</small></th>
+                <th>COC<br><small>-</small></th>
+                <th>TDS<br><small>= Cond × 0.65</small></th>
+                <th>PO4<br><small>ppm</small></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set systems = [('Raw Water', ['-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-']), ('CT-1 (DCW, SLAB)', ['7.50-8.30', '<350', '<180', '<180', 'as per pH', '<150', '<250', '<3000', '<20', '<20', '<3', '<5.0', '-', '<1500', '']), ('CT-6 (DCW, BL. & COMBI)', ['8.50-8.90', '<350', '<210', '<140', 'as per pH', '<200', '<100', '<1200', '<20', '<20', '<4', '<5.0', '-', '<600', '']), ('CT-2 (LRF 1 & COMBI)', ['8.50-8.90', '<350', '<210', '<140', 'as per pH', '<200', '<100', '<1200', '<20', '<20', '<4', '<5.0', '-', '<600', '']), ('CT-3 (VD)', ['8.50-8.90', '<350', '<210', '<140', 'as per pH', '<200', '<100', '<1200', '<20', '<20', '<4', '<5.0', '-', '<600', '']), ('CT-4 (LRF 2&3)', ['8.50-8.90', '<350', '<210', '<140', 'as per pH', '<200', '<100', '<1200', '<20', '<20', '<4', '<5.0', '-', '<600', '']), ('CT-5 (BL. & SLAB)', ['7.50-8.30', '<350', '<110', '<140', 'as per pH', '<200', '<150', '<1800', '<20', '<20', '<4', '<5.0', '-', '<900', '']), ('CT-7 (FES)', ['8.50-8.90', '<350', '<210', '<140', 'as per pH', '<200', '<100', '<1200', '<20', '<20', '<4', '<5.0', '-', '<600', '']), ('CT-8 (EAF)', ['8.50-8.90', '<350', '<210', '<140', 'as per pH', '<200', '<100', '<1200', '<20', '<20', '<4', '<5.0', '-', '<600', ''])] %}
+            {% set params = ['pH', 'TH', 'CaH', 'MgH', 'P-Alk', 'M-Alk', 'Chloride', 'Conductivity', 'Turbidity', 'TSS', 'Iron', 'COC', 'TDS', 'PO4'] %}
+
+            {% for system, ranges in systems %}
+            <tr class="table-light">
+                <td><strong>{{ system }}</strong><br><small>Range</small></td>
+                {% for r in ranges %}
+                <td><small>{{ r }}</small></td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <td><strong>{{ system }}</strong><br><small>Actual</small></td>
+                {% for param in params %}
+                <td>
+                    <input type="number" step="any" name="icw_dcw_{{ system|urlencode }}_{{ param }}_value" class="form-control text-center" style="min-width: 100px;" 
+                           value="{{ existing_data.get('icw_dcw_' + system|urlencode + '_' + param, '') }}"
+                           {% if param == 'MgH' or param == 'TDS' %}readonly{% endif %} oninput="calcDerivedValues(this)">
+                    
+                    <input type="hidden" name="icw_dcw_{{ system|urlencode }}_{{ param }}_range" value="{{ ranges[loop.index0] if ranges else '-' }}">
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script>
+    function calcDerivedValues(input) {
+        const row = input.closest('tr');
+        if (!row) return;
+        const th = parseFloat(row.querySelector('[name*="_TH_"]').value) || 0;
+        const cah = parseFloat(row.querySelector('[name*="_CaH_"]').value) || 0;
+        const cond = parseFloat(row.querySelector('[name*="_Conductivity_"]').value) || 0;
+        const mghInput = row.querySelector('[name*="_MgH_"]');
+        const tdsInput = row.querySelector('[name*="_TDS_"]');
+        if (mghInput) { mghInput.value = (th - cah).toFixed(2); }
+        if (tdsInput) { tdsInput.value = (cond * 0.65).toFixed(2); }
+    }
+</script>

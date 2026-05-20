@@ -1,0 +1,20 @@
+ Volume in drive D is New Volume
+ Volume Serial Number is 3EC2-319D
+
+ Directory of D:\water_quality_app\app\routes
+
+11/04/2025  06:14 PM    <DIR>          .
+11/04/2025  06:14 PM    <DIR>          ..
+11/04/2025  12:00 PM             1,824 admin.py
+11/04/2025  12:00 PM            18,845 analytics.py
+11/04/2025  12:00 PM             2,328 auth.py
+11/04/2025  12:00 PM             6,318 power_plant_reports.py
+11/04/2025  12:00 PM             7,464 rail_mill_reports.py
+11/28/2025  10:39 AM            19,240 reports.py
+11/13/2025  04:35 PM             8,383 sms2_reports.py
+11/04/2025  12:00 PM             6,979 sms3_reports.py
+11/04/2025  12:00 PM             6,837 spm_reports.py
+11/04/2025  12:00 PM                 0 __init__.py
+11/28/2025  10:39 AM    <DIR>          __pycache__
+              10 File(s)         78,218 bytes
+               3 Dir(s)   8,186,089,472 bytes free

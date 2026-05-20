@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}View Rail Mill Report (ID: {{ report.id }}){% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-1">Rail Mill Report ID: {{ report.id }}</h3>
+            <p class="text-muted mb-0">
+                {{ report.department.name }} | Submitted by {{ report.user.email }} on {{ report.sampling_time.strftime('%Y-%m-%d %H:%M:%S') }}
+            </p>
+        </div>
+        <div>
+            <a href="{{ url_for('rail_mill_reports.edit_report_rail_mill', report_id=report.id) }}" class="btn btn-secondary">Edit Report</a>
+            <a href="{{ url_for('rail_mill_reports.pdf_report_rail_mill', report_id=report.id) }}" class="btn btn-danger">Download PDF</a>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        <div class="text-center mb-3">
+            <h4 class="mb-0">Rail Mill Water Analysis Report</h4>
+            <p><strong>Date:</strong> {{ report.sampling_time.strftime('%d.%m.%Y') }}</p>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered text-center align-middle small">
+                <thead class="table-primary">
+                    <tr>
+                        <th rowspan="2">System</th>
+                        <th rowspan="2">Parameters</th>
+                        <th>pH</th><th>Conductivity</th><th>Turbidity</th><th>TH</th><th>CaH</th><th>MgH</th><th>Chloride</th>
+                        <th>M-Alkalinity</th><th>Nitrite</th><th>IRON</th><th>Silica</th><th>TDS</th>
+                        <th>TSS</th><th>Oil and Grease</th><th>Zinc</th><th>Phosphate</th><th>Remark</th>
+                    </tr>
+                    <tr>
+                        <th>-</th><th>µS/cm</th><th>NTU</th><th>ppm as CaCO3</th><th>ppm as CaCO3</th><th>ppm as CaCO3</th>
+                        <th>ppm as Cl</th><th>ppm as CaCO3</th><th>ppm as NaNO2</th><th>ppm as Fe</th><th>ppm as SiO2</th>
+                        <th>ppm</th><th>ppm</th><th>ppm</th><th>ppm as Zn</th><th>ppm as p4</th><th>-</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set systems = {
+                        'RHF': {
+                            'limits': ['8.5-10.5', '<1500', '<10', '<10', '<7', '<3', '<50', 'As per pH', '150-250', '<0.5', '<50', '<900', '<10', '0', 'NA', 'NA', ''],
+                            'params': ['pH', 'Conductivity', 'Turbidity', 'TH', 'CaH', 'MgH', 'Chloride', 'M-Alkalinity', 'Nitrite', 'IRON', 'Silica', 'TDS', 'TSS', 'Oil_and_Grease', 'Zinc', 'Phosphate', 'Remark']
+                        },
+                        'DCW': {
+                            'limits': ['7.8-9.0', '<1000', '<25 NTU', '<350', '<250', '<100', '<150', 'As per pH', 'NA', '<1.0', '<80', '<650', '<25', '<25', '0.2-0.5', '4.0-6.0', ''],
+                            'params': ['pH', 'Conductivity', 'Turbidity', 'TH', 'CaH', 'MgH', 'Chloride', 'M-Alkalinity', 'Nitrite', 'IRON', 'Silica', 'TDS', 'TSS', 'Oil_and_Grease', 'Zinc', 'Phosphate', 'Remark']
+                        },
+                        'ICW Mill': {
+                            'limits': ['8.0-8.4', '<1000', '<25 NTU', '<600', '<400', '<200', '<350', 'As per pH', 'NA', '<1.0', '<80', '<600', '<15', '0', '0.2-0.5', '2.0-4.0', ''],
+                            'params': ['pH', 'Conductivity', 'Turbidity', 'TH', 'CaH', 'MgH', 'Chloride', 'M-Alkalinity', 'Nitrite', 'IRON', 'Silica', 'TDS', 'TSS', 'Oil_and_Grease', 'Zinc', 'Phosphate', 'Remark']
+                        }
+                    } %}
+                    
+                    {% for system_name, data in systems.items() %}
+                    <tr>
+                        <td rowspan="2" class="fw-bold" style="background-color: #f2f2f2;"><strong>{{ system_name }}</strong></td>
+                        <td>LIMIT</td>
+                        {% for limit in data.limits %}
+                        <td>{{ limit }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Actual</td>
+                        {% set param_key_map = {
+    "Conductivity": "Cond",
+    "Turbidity": "Turb",
+    "M-Alkalinity": "M-Alk"
+} %}
+
+{% for param in data.params %}
+    {% set db_key = param_key_map.get(param, param) %}
+    <td>{{ params.get('rail_mill_' + system_name|urlencode + '_' + db_key, '-') }}</td>
+{% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

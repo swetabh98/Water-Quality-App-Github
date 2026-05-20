@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Manage Departments{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm p-4 mb-4">
+        <h3 class="mb-4 text-primary">Add New Department</h3>
+        <form method="POST" class="row g-3">
+            <div class="col-md-8">
+                <input type="text" name="new_department" class="form-control" placeholder="New Department Name" required>
+            </div>
+            <div class="col-md-4">
+                <input type="submit" class="btn btn-primary w-100" value="Add Department">
+            </div>
+        </form>
+    </div>
+
+    <hr class="my-4">
+
+    {% for dept in departments %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center bg-light">
+            <h5 class="mb-0 text-dark">{{ dept.name }}</h5>
+            <a href="{{ url_for('admin.delete_dept', id=dept.id) }}" class="btn btn-sm btn-outline-danger" title="Delete Department">🗑️</a>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin.add_equipment', dept_id=dept.id) }}" class="row g-2 mb-3">
+                <div class="col-md-9">
+                    <input type="text" name="equip_name" class="form-control" placeholder="New Equipment Name" required>
+                </div>
+                <div class="col-md-3">
+                    <input type="submit" class="btn btn-success w-100" value="Add Equipment">
+                </div>
+            </form>
+
+            {% if dept.equipments %}
+            <ul class="list-group">
+                {% for eq in dept.equipments %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ eq.name }}
+                    <a href="{{ url_for('admin.delete_equipment', equip_id=eq.id) }}" class="btn btn-sm btn-outline-danger" title="Delete Equipment">🗑️</a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted">No equipment added yet.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

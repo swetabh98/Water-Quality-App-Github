@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Edit SMS-3 Report (ID: {{ report.id }}){% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <form method="POST">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h3 class="mb-1">Edit Report ID: {{ report.id }}</h3>
+                <p class="text-muted mb-0">
+                    {{ department.name }} | Submitted by {{ report.user.email }} on {{ sampling_time.strftime('%Y-%m-%d %H:%M:%S') }}
+                </p>
+            </div>
+            <div>
+                <a href="{{ url_for('sms3_reports.view_report_sms3', report_id=report.id) }}" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success">Update Report</button>
+            </div>
+        </div>
+
+        <div class="container mt-4">
+            <div class="text-center mb-3">
+                <h3 class="mb-0">Daily Cooling Water Analysis Report --- SMS III</h3>
+                <p><strong>Date:</strong> {{ sampling_time.strftime('%d.%m.%Y') }}</p>
+            </div>
+
+            <h5 class="mt-4 fw-bold">ICW & DCW SYSTEM</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered text-center align-middle small">
+                    <thead class="table-primary">
+                        <tr>
+                            <th rowspan="2">System</th><th rowspan="2">Parameters</th><th>pH</th><th>TH</th><th>CaH</th><th>MgH</th><th>P-Alk.</th><th>M-Alk.</th><th>Chloride</th>
+                            <th>Conductivity</th><th>Turbidity</th><th>TSS*</th><th>TDS</th><th>Iron</th><th>Oil/Grease</th>
+                            <th>Zinc</th><th>Phosphate</th><th>COC</th><th>Silica</th>
+                        </tr>
+                        <tr>
+                            <th>-</th><th>PPM as CaCO3</th><th>PPM as CaCO3</th><th>PPM as CaCO3</th><th>PPM as CaCO3</th>
+                            <th>PPM as CaCO3</th><th>PPM as CaCO3</th><th>µS/Cm</th><th>NTU</th><th>PPM</th>
+                            <th>PPM</th><th>PPM</th><th>PPM</th><th>PPM</th><th>PPM</th><th>-</th><th>PPM as Sio2</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set icw_systems = { 'Raw Water': ['7.2-7.8', '< 120', '< 80', '< 40', 'Nil', 'As per pH', '< 50', '< 350', '< 5', '< 5', '< 230', '< 1.0', 'Nil', 'Nil', 'Nil', '', '< 15'], 'CT-1 (EAF)': ['7.2-8.3', '< 750', '< 425', '< 325', 'Nil', 'As per pH', '< 250', '< 1800', '< 15', '< 15', '< 1170', '< 1.0', '< 1.0', 'Min 0.1 PPM', 'Min 1.0', '< 5.0', '< 75'], 'CT-2 (Spray)': ['7.2-8.3', '< 250', '< 150', '< 100', 'Nil', 'As per pH', '< 150', '< 750', '< 15', '< 15', '< 500', '< 1.0', '< 1.0', 'Nil', 'Min 1.0', '< 3.0', '< 50'], 'CT-3 (VD)': ['7.2-8.3', '< 300', '< 200', '< 150', 'Nil', 'As per pH', '< 150', '< 1000', '< 20', '< 20', '< 650', '< 1.0', '< 1.0', 'Min 0.1 PPM', 'Min 1.0', '< 3.0', '< 50'], 'CT-4 (Billet)': ['7.2-8.3', '< 750', '< 425', '< 325', 'Nil', 'As per pH', '< 250', '< 1800', '< 15', '< 15', '< 1170', '< 1.0', '< 1.0', 'Min 0.1 PPM', 'Min 1.0', '< 5.0', '< 75'] } %}
+                        {% set icw_params = ['pH', 'TH', 'CaH', 'MgH', 'P-Alk', 'M-Alk', 'Chloride', 'Conductivity', 'Turbidity', 'TSS', 'TDS', 'Iron', 'Oil/Grease', 'Zinc', 'Phosphate', 'COC', 'Silica'] %}
+                        {% for system_name, limits in icw_systems.items() %}
+                        <tr>
+                            <td rowspan="2"><strong>{{ system_name }}</strong></td>
+                            <td>LIMIT</td>
+                            {% for limit in limits %}<td>{{ limit }}</td>{% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Actual</td>
+                            {% for param in icw_params %}
+                            <td><input style="width: 60px;" type="text" name="sms3_icw_{{ system_name|urlencode }}_{{ param }}_value" class="form-control form-control-sm" value="{{ existing_data.get('sms3_icw_' + system_name|urlencode + '_' + param, '') }}"></td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <h5 class="mt-4 fw-bold">CLOSE LOOP SYSTEM (PRIMARY SYSTEM)</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered text-center align-middle small">
+                     <thead class="table-primary">
+                        <tr>
+                            <th rowspan="2">System</th><th rowspan="2">Parameters</th><th>pH</th><th>TH</th><th>CaH</th><th>MgH</th><th>P-Alk.</th>
+                            <th>M-Alk.</th><th>Chloride</th><th>Conductivity</th><th>Turbidity</th><th>TSS*</th><th>TDS</th><th>Nitrite</th>
+                        </tr>
+                        <tr>
+                            <th>-</th><th>PPM as CaCO3</th><th>PPM as CaCO3</th><th>PPM as CaCO3</th><th>PPM as CaCO3</th>
+                            <th>PPM as CaCO3</th><th>PPM as CaCO3</th><th>µS/Cm</th><th>NTU</th><th>PPM</th><th>PPM</th><th>PPM as NaNO2</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                         {% set close_systems = { 'SOFT WATER': ['7.2-7.8', '< 5', '< 3', '< 2', 'Nil', 'As per pH', '< 50', '< 350', '< 5', '< 5', '< 230', 'Nil'], 'EAF': ['8.0-10.5', '< 10', '< 6', '< 4', 'As per pH', 'As per pH', '< 50', '< 1500', '< 10', '< 10', '< 1000', '250-350'], 'COMBI': ['8.0-10.5', '< 10', '< 6', '< 4', 'As per pH', 'As per pH', '< 50', '< 1500', '< 10', '< 10', '< 1000', '250-350'], 'BILLET': ['8.0-10.5', '< 10', '< 6', '< 4', 'As per pH', 'As per pH', '< 50', '< 1500', '< 10', '< 10', '< 1000', '250-350'] } %}
+                        {% set close_params = ['pH', 'TH', 'CaH', 'MgH', 'P-Alk', 'M-Alk', 'Chloride', 'Conductivity', 'Turbidity', 'TSS', 'TDS', 'Nitrite'] %}
+                        {% for system_name, limits in close_systems.items() %}
+                        <tr>
+                            <td rowspan="2"><strong>{{ system_name }}</strong></td>
+                            <td>LIMIT</td>
+                            {% for limit in limits %}<td>{{ limit }}</td>{% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Actual</td>
+                            {% for param in close_params %}
+                            <td><input style="width: 60px;" type="text" name="sms3_closeloop_{{ system_name|urlencode }}_{{ param }}_value" class="form-control form-control-sm" value="{{ existing_data.get('sms3_closeloop_' + system_name|urlencode + '_' + param, '') }}"></td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <h5 class="mt-4 fw-bold">Water Consumption</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered text-center align-middle small">
+                    <thead class="table-primary">
+                        <tr>
+                            <th rowspan="2">System</th>
+                            <th colspan="3">Flow Meter Reading (Cubic Meter)</th>
+                            <th rowspan="2">Design Consumption</th>
+                        </tr>
+                        <tr>
+                            <th>Final</th><th>Initial</th><th>Consumption</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set consumption_systems = ['EAF (SW # 1)', 'Combi Caster ( SW#2)', 'Billet Caster ( SW#3)', 'EAF Secondary', 'VD CT', 'Spray CT', 'Billet Caster Secondary CT'] %}
+                        {% for system_name in consumption_systems %}
+                        <tr>
+                            <td><strong>{{ system_name }}</strong></td>
+                            <td><input type="text" name="sms3_consumption_{{ system_name|urlencode }}_Final_value" class="form-control form-control-sm" value="{{ existing_data.get('sms3_consumption_' + system_name|urlencode + '_Final', '') }}"></td>
+                            <td><input type="text" name="sms3_consumption_{{ system_name|urlencode }}_Initial_value" class="form-control form-control-sm" value="{{ existing_data.get('sms3_consumption_' + system_name|urlencode + '_Initial', '') }}"></td>
+                            <td><input type="text" name="sms3_consumption_{{ system_name|urlencode }}_Consumption_value" class="form-control form-control-sm" value="{{ existing_data.get('sms3_consumption_' + system_name|urlencode + '_Consumption', '') }}"></td>
+                            <td><input type="text" name="sms3_consumption_{{ system_name|urlencode }}_Design_value" class="form-control form-control-sm" value="{{ existing_data.get('sms3_consumption_' + system_name|urlencode + '_Design', '') }}"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <h5 class="mt-4 fw-bold">CHEMICAL CONSUMPTION DETAILS</h5>
+            <div class="table-responsive">
+                 <table class="table table-bordered text-center align-middle small">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>System</th><th>M-2825</th><th>M-651</th><th>M-10</th><th>M-2610</th><th>M-9002</th>
+                            <th>M-2521</th><th>M-7730</th><th>M-7002</th><th>M-357</th><th>M-TG</th><th>M-A 111</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set chemical_systems = ['EAF', 'Combi Caster', 'Billet Caster', 'EAF CT', 'VD CT', 'Spray CT', 'Billet Caster CT', 'Scale Pit / PSF', 'RO', 'Total Cons.', 'Design Cons.', 'Excess dosing', 'Stock', 'Pattern'] %}
+                        {% set chemical_params = ['M-2825', 'M-651', 'M-10', 'M-2610', 'M-9002', 'M-2521', 'M-7730', 'M-7002', 'M-357', 'M-TG', 'M-A 111'] %}
+                        {% for system_name in chemical_systems %}
+                        <tr>
+                            <td><strong>{{ system_name }}</strong></td>
+                            {% for param in chemical_params %}
+                            <td><input type="text" name="sms3_chemical_{{ system_name|urlencode }}_{{ param }}_value" class="form-control form-control-sm" value="{{ existing_data.get('sms3_chemical_' + system_name|urlencode + '_' + param, '') }}"></td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

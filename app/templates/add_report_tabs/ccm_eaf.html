@@ -1,0 +1,83 @@
+<div style="overflow-x: auto;" class="w-100">
+    <table class="table table-bordered text-center align-middle small w-100">
+        <thead class="table-primary">
+            <tr>
+                <th class="bg-secondary text-white">System</th>
+                <th>pH<br><small>-</small></th>
+                <th>TH<br><small>ppm as CaCO3</small></th>
+                <th>P-Alk<br><small>ppm as CaCO3</small></th>
+                <th>M-Alk<br><small>ppm as CaCO3</small></th>
+                <th>Chloride<br><small>ppm</small></th>
+                <th>Conductivity<br><small>µS/cm</small></th>
+                <th>Turbidity<br><small>NTU</small></th>
+                <th>TSS<br><small>ppm</small></th>
+                <th>Nitrite<br><small>ppm as NO2-</small></th>
+                <th>Iron<br><small>ppm</small></th>
+                <th>TDS<br><small>= Cond × 0.65</small></th>
+                <th>TBC<br><small>CFU/ml</small></th>
+                <th>SRB<br><small>Counts/100ml</small></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set systems = [
+                ('SOFT WATER', ['-', '<20', 'as per pH', 'as per pH', '<50', '<600', '<20', '<20', '150-200', '<1', '<300', '<100000', '<100']),
+                ('COMBI CASTER', ['8.0-9.0', '<20', 'as per pH', 'as per pH', '<50', '<600', '<20', '<20', '150-200', '<1', '<300', '<100000', '<100']),
+                ('BILLET&SLAB MACHINE', ['7.0-9.5', '<10', 'as per pH', 'as per pH', '<100', '<750', '<20', '<20', '250-300', '<1', '<400', '<100000', '<100']),
+                ('SLAB MOULD', ['8.5-9.5', '<10', 'as per pH', 'as per pH', '<50', '<1000', '<10', '<10', '250-300', '<1', '<300', '<100000', '<100']),
+                ('LRF # 1', ['8.5-9.5', '<10', 'as per pH', 'as per pH', '<50', '<1000', '<10', '<10', '250-300', '<1', '<300', '<100000', '<100']),
+                ('LRF # 2 AND 3', ['8.5-9.5', '<10', 'as per pH', 'as per pH', '<50', '<1000', '<10', '<10', '250-300', '<1', '<300', '<100000', '<100']),
+                ('EAF#1', ['8.5-9.5', '<10', 'as per pH', 'as per pH', '<50', '<1000', '<20', '<20', '250-300', '<0.1', '<600', '<100000', '<100']),
+                ('EAF#2', ['8.5-9.F5', '<10', 'as per pH', 'as per pH', '<50', '<1000', '<20', '<20', '250-300', '<0.1', '<600', '<100000', '<100']),
+                ('FES', ['8.5-9.5', '<10', 'as per pH', 'as per pH', '<50', '<1000', '<20', '<20', '250-300', '<0.1', '<600', '<100000', '<100'])
+            ] %}
+            
+            {% set params = ['pH', 'TH', 'P-Alk', 'M-Alk', 'Chloride', 'Conductivity', 'Turbidity', 'TSS', 'Nitrite', 'Iron', 'TDS', 'TBC', 'SRB'] %}
+
+            {% for system, ranges in systems %}
+            <tr class="table-light">
+                <td><strong>{{ system }}</strong><br><small>Range</small></td>
+                {% for r in ranges %}<td><small>{{ r }}</small></td>{% endfor %}
+            </tr>
+            <tr>
+                <td><strong>{{ system }}</strong><br><small>Actual</small></td>
+                
+                {% for param in params %}
+                <td>
+                    <input type="number" step="any"
+                           name="ccm_eaf_{{ system|urlencode }}_{{ param }}_value"
+                           class="form-control text-center"
+                           style="min-width: 100px;"
+                           value="{{ existing_data.get('ccm_eaf_' + system|urlencode + '_' + param, '') }}"
+                           {% if param == 'TDS' %}readonly{% endif %}
+                           oninput="calcTDS(this)">
+                    
+                    <input type="hidden" 
+                           name="ccm_eaf_{{ system|urlencode }}_{{ param }}_range" 
+                           value="{{ ranges[loop.index0] if ranges else '-' }}">
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="mb-3 w-100">
+        <label class="form-label"><strong>Remarks:</strong></label>
+        <textarea class="form-control w-100" name="ccm_eaf_remarks_value" rows="3">{{ existing_data.get('ccm_eaf_remarks', '') }}</textarea>
+    </div>
+</div>
+
+<script>
+    function calcTDS(input) {
+        const row = input.closest('tr');
+        if (!row) return;
+
+        const conductivityInput = row.querySelector('[name*="_Conductivity_"]');
+        const tdsInput = row.querySelector('[name*="_TDS_"]');
+
+        if (conductivityInput && tdsInput) {
+            const conductivity = parseFloat(conductivityInput.value) || 0;
+            tdsInput.value = (conductivity * 0.65).toFixed(2);
+        }
+    }
+</script>

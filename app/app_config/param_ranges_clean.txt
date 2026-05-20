@@ -1,0 +1,605 @@
+[Plate Mill]
+  {page: plate_mill.html}
+    - System_1:
+        pH: 7.2to 7.8
+        Conductivity: <450
+        TDS: <290
+        TH: <120
+        Ca-H: <72
+        Mg-H: <48
+        Chloride: <50
+        P-Alkalinity: NIL
+        M-Alkalinity: <120
+        Silica: <15
+        O-Phosphate: NA
+        TSS: NIL
+        Turbidity: <10
+        Iron: <0.1
+        NITRITE: NA
+        COC: NA
+    - System_2:
+        pH: 
+        Conductivity: 
+        TDS: 
+        TH: 
+        Ca-H: 
+        Mg-H: 
+        Chloride: 
+        P-Alkalinity: 
+        M-Alkalinity: 
+        Silica: 
+        O-Phosphate: 
+        TSS: 
+        Turbidity: 
+        Iron: 
+        NITRITE: 
+        COC: 
+    - System_3:
+        pH: 
+        Conductivity: 
+        TDS: 
+        TH: 
+        Ca-H: 
+        Mg-H: 
+        Chloride: 
+        P-Alkalinity: 
+        M-Alkalinity: 
+        Silica: 
+        O-Phosphate: 
+        TSS: 
+        Turbidity: 
+        Iron: 
+        NITRITE: 
+        COC: 
+    - System_4:
+        pH: 7.8to 8.5
+        Conductivity: <460
+        TDS: <300
+        TH: <500
+        Ca-H: <330
+        Mg-H: <170
+        Chloride: <300
+        P-Alkalinity: As per pH
+        M-Alkalinity: As per pH
+        Silica: <50
+        O-Phosphate: 2to3
+        TSS: <20
+        Turbidity: <25
+        Iron: <1.0
+        NITRITE: NA
+        COC: 2.5to3.0
+    - System_5:
+        pH: 
+        Conductivity: 
+        TDS: 
+        TH: 
+        Ca-H: 
+        Mg-H: 
+        Chloride: 
+        P-Alkalinity: 
+        M-Alkalinity: 
+        Silica: 
+        O-Phosphate: 
+        TSS: 
+        Turbidity: 
+        Iron: 
+        NITRITE: 
+        COC: 
+    - System_6:
+        pH: 
+        Conductivity: 
+        TDS: 
+        TH: 
+        Ca-H: 
+        Mg-H: 
+        Chloride: 
+        P-Alkalinity: 
+        M-Alkalinity: 
+        Silica: 
+        O-Phosphate: 
+        TSS: 
+        Turbidity: 
+        Iron: 
+        NITRITE: 
+        COC: 
+    - System_7:
+        pH: 7.8to 8.1
+        Conductivity: <6000
+        TDS: <4000
+        TH: <1700
+        Ca-H: <1250
+        Mg-H: <450
+        Chloride: <1200
+        P-Alkalinity: NIL
+        M-Alkalinity: As per pH
+        Silica: <100
+        O-Phosphate: 0.5to1.0
+        TSS: <10
+        Turbidity: <15
+        Iron: <1.0
+        NITRITE: NA
+        COC: 6to7
+    - System_8:
+        pH: 
+        Conductivity: 
+        TDS: 
+        TH: 
+        Ca-H: 
+        Mg-H: 
+        Chloride: 
+        P-Alkalinity: 
+        M-Alkalinity: 
+        Silica: 
+        O-Phosphate: 
+        TSS: 
+        Turbidity: 
+        Iron: 
+        NITRITE: 
+        COC: 
+    - System_9:
+        pH: 7.8to 8.1
+        Conductivity: <460
+        TDS: <300
+        TH: <350
+        Ca-H: <230
+        Mg-H: <200
+        Chloride: <120
+        P-Alkalinity: NIL
+        M-Alkalinity: As per pH
+        Silica: <50
+        O-Phosphate: 2to3
+        TSS: <10
+        Turbidity: <15
+        Iron: <1.0
+        NITRITE: NA
+        COC: 2.5to3.3
+    - System_10:
+        pH: 
+        Conductivity: 
+        TDS: 
+        TH: 
+        Ca-H: 
+        Mg-H: 
+        Chloride: 
+        P-Alkalinity: 
+        M-Alkalinity: 
+        Silica: 
+        O-Phosphate: 
+        TSS: 
+        Turbidity: 
+        Iron: 
+        NITRITE: 
+        COC: 
+    - System_11:
+        pH: 8.0to 9.5
+        Conductivity: <460
+        TDS: <300
+        TH: <10
+        Ca-H: <6
+        Mg-H: <4
+        Chloride: <50
+        P-Alkalinity: As per pH
+        M-Alkalinity: As per pH
+        Silica: <20
+        O-Phosphate: NA
+        TSS: NA
+        Turbidity: <10
+        Iron: <0.5
+        NITRITE: 200 to 300
+        COC: NA
+    - System_12:
+        pH: 
+        Conductivity: 
+        TDS: 
+        TH: 
+        Ca-H: 
+        Mg-H: 
+        Chloride: 
+        P-Alkalinity: 
+        M-Alkalinity: 
+        Silica: 
+        O-Phosphate: 
+        TSS: 
+        Turbidity: 
+        Iron: 
+        NITRITE: 
+        COC: 
+
+[Rail Mill]
+  {page: rail_mill_report.html}
+    - RHF:
+        pH: 8.5-10.5
+        Conductivity: <1500
+        Turbidity: <10
+        TH: <10
+        CaH: <7
+        MgH: <3
+        Chloride: <50
+        M-Alkalinity: As per pH
+        Nitrite: 150-250
+        IRON: <0.5
+        Silica: <50
+        TDS: <900
+        TSS: <100
+        Oil_and_Grease: NA
+        Zinc: NA
+        Phosphate: 
+        Remark: 
+    - DCW:
+        pH: 7.8-9.0
+        Conductivity: <1000
+        Turbidity: <25 NTU
+        TH: <350
+        CaH: <250
+        MgH: <100
+        Chloride: <150
+        M-Alkalinity: As per pH
+        Nitrite: NA
+        IRON: <1.0
+        Silica: <80
+        TDS: <650
+        TSS: <25
+        Oil_and_Grease: <25
+        Zinc: 0.2-0.5
+        Phosphate: 4.0-6.0
+        Remark: 
+    - ICW Mill:
+        pH: 8.0-8.4
+        Conductivity: <1000
+        Turbidity: <25 NTU
+        TH: <600
+        CaH: <400
+        MgH: <200
+        Chloride: <350
+        M-Alkalinity: As per pH
+        Nitrite: NA
+        IRON: <1.0
+        Silica: <80
+        TDS: <600
+        TSS: <15
+        Oil_and_Grease: 0
+        Zinc: 0.2-0.5
+        Phosphate: 2.0-4.0
+        Remark: 
+
+[SPM]
+  {page: spm_report.html}
+    - RHF:
+        pH: 8.5-10.5
+        Conductivity: <1500
+        Turbidity: <10
+        TH: <10
+        CaH: <7
+        MgH: <3
+        Chloride: <50
+        M-Alkalinity: As per pH
+        Nitrite: 150-250
+        IRON: <0.5
+        Silica: <50
+        TDS: <900
+        TSS: <100
+        Oil_and_Grease: NA
+        Zinc: NA
+        Phosphate: 
+        Remark: 
+    - DCW:
+        pH: 7.8-9.0
+        Conductivity: <1000
+        Turbidity: <25 NTU
+        TH: <350
+        CaH: <250
+        MgH: <100
+        Chloride: <150
+        M-Alkalinity: As per pH
+        Nitrite: NA
+        IRON: <1.0
+        Silica: <80
+        TDS: <650
+        TSS: <25
+        Oil_and_Grease: <25
+        Zinc: 0.2-0.5
+        Phosphate: 4.0-6.0
+        Remark: 
+    - ICW Mill:
+        pH: 8.0-8.4
+        Conductivity: <1000
+        Turbidity: <25 NTU
+        TH: <600
+        CaH: <400
+        MgH: <200
+        Chloride: <350
+        M-Alkalinity: As per pH
+        Nitrite: NA
+        IRON: <1.0
+        Silica: <80
+        TDS: <600
+        TSS: <15
+        Oil_and_Grease: 0
+        Zinc: 0.2-0.5
+        Phosphate: 2.0-4.0
+        Remark: 
+
+[Power Plant]
+  {page: power_plant_report.html}
+    (no ranges found)
+
+[SMS-2]
+  {page: icw_dcw.html}
+    - Raw Water:
+        pH: -
+        TH: -
+        CaH: -
+        MgH: -
+        P-Alk: -
+        M-Alk: -
+        Chloride: -
+        Conductivity: -
+        Turbidity: -
+        TSS: -
+        Iron: -
+        COC: -
+        TDS: -
+        PO4: -
+    - CT-1 (DCW, SLAB):
+        param_1: 7.50-8.30
+        param_2: <350
+        param_3: <180
+        param_4: <180
+        param_5: as per pH
+        param_6: <150
+        param_7: <250
+        param_8: <3000
+        param_9: <20
+        param_10: <20
+        param_11: <3
+        param_12: <5.0
+        param_13: -
+        param_14: <1500
+        param_15: 
+    - CT-6 (DCW, BL. & COMBI):
+        param_1: 8.50-8.90
+        param_2: <350
+        param_3: <210
+        param_4: <140
+        param_5: as per pH
+        param_6: <200
+        param_7: <100
+        param_8: <1200
+        param_9: <20
+        param_10: <20
+        param_11: <4
+        param_12: <5.0
+        param_13: -
+        param_14: <600
+        param_15: 
+    - CT-2 (LRF 1 & COMBI):
+        param_1: 8.50-8.90
+        param_2: <350
+        param_3: <210
+        param_4: <140
+        param_5: as per pH
+        param_6: <200
+        param_7: <100
+        param_8: <1200
+        param_9: <20
+        param_10: <20
+        param_11: <4
+        param_12: <5.0
+        param_13: -
+        param_14: <600
+        param_15: 
+    - CT-3 (VD):
+        param_1: 8.50-8.90
+        param_2: <350
+        param_3: <210
+        param_4: <140
+        param_5: as per pH
+        param_6: <200
+        param_7: <100
+        param_8: <1200
+        param_9: <20
+        param_10: <20
+        param_11: <4
+        param_12: <5.0
+        param_13: -
+        param_14: <600
+        param_15: 
+    - CT-4 (LRF 2&3):
+        param_1: 8.50-8.90
+        param_2: <350
+        param_3: <210
+        param_4: <140
+        param_5: as per pH
+        param_6: <200
+        param_7: <100
+        param_8: <1200
+        param_9: <20
+        param_10: <20
+        param_11: <4
+        param_12: <5.0
+        param_13: -
+        param_14: <600
+        param_15: 
+    - CT-5 (BL. & SLAB):
+        param_1: 7.50-8.30
+        param_2: <350
+        param_3: <110
+        param_4: <140
+        param_5: as per pH
+        param_6: <200
+        param_7: <150
+        param_8: <1800
+        param_9: <20
+        param_10: <20
+        param_11: <4
+        param_12: <5.0
+        param_13: -
+        param_14: <900
+        param_15: 
+    - CT-7 (FES):
+        param_1: 8.50-8.90
+        param_2: <350
+        param_3: <210
+        param_4: <140
+        param_5: as per pH
+        param_6: <200
+        param_7: <100
+        param_8: <1200
+        param_9: <20
+        param_10: <20
+        param_11: <4
+        param_12: <5.0
+        param_13: -
+        param_14: <600
+        param_15: 
+    - CT-8 (EAF):
+        param_1: 8.50-8.90
+        param_2: <350
+        param_3: <210
+        param_4: <140
+        param_5: as per pH
+        param_6: <200
+        param_7: <100
+        param_8: <1200
+        param_9: <20
+        param_10: <20
+        param_11: <4
+        param_12: <5.0
+        param_13: -
+        param_14: <600
+        param_15: 
+  {page: ccm_eaf.html}
+    - SOFT WATER:
+        pH: -
+        TH: <20
+        P-Alk: as per pH
+        M-Alk: as per pH
+        Chloride: <50
+        Conductivity: <600
+        Turbidity: <20
+        TSS: <20
+        Nitrite: 150-200
+        Iron: <1
+        TDS: <300
+        TBC: <100000
+        SRB: <100
+    - COMBI CASTER:
+        pH: 8.0-9.0
+        TH: <20
+        P-Alk: as per pH
+        M-Alk: as per pH
+        Chloride: <50
+        Conductivity: <600
+        Turbidity: <20
+        TSS: <20
+        Nitrite: 150-200
+        Iron: <1
+        TDS: <300
+        TBC: <100000
+        SRB: <100
+    - BILLET&SLAB MACHINE:
+        pH: 7.0-9.5
+        TH: <10
+        P-Alk: as per pH
+        M-Alk: as per pH
+        Chloride: <100
+        Conductivity: <750
+        Turbidity: <20
+        TSS: <20
+        Nitrite: 250-300
+        Iron: <1
+        TDS: <400
+        TBC: <100000
+        SRB: <100
+    - SLAB MOULD:
+        pH: 8.5-9.5
+        TH: <10
+        P-Alk: as per pH
+        M-Alk: as per pH
+        Chloride: <50
+        Conductivity: <1000
+        Turbidity: <10
+        TSS: <10
+        Nitrite: 250-300
+        Iron: <1
+        TDS: <300
+        TBC: <100000
+        SRB: <100
+    - LRF # 1:
+        pH: 8.5-9.5
+        TH: <10
+        P-Alk: as per pH
+        M-Alk: as per pH
+        Chloride: <50
+        Conductivity: <1000
+        Turbidity: <10
+        TSS: <10
+        Nitrite: 250-300
+        Iron: <1
+        TDS: <300
+        TBC: <100000
+        SRB: <100
+    - LRF # 2 AND 3:
+        pH: 8.5-9.5
+        TH: <10
+        P-Alk: as per pH
+        M-Alk: as per pH
+        Chloride: <50
+        Conductivity: <1000
+        Turbidity: <10
+        TSS: <10
+        Nitrite: 250-300
+        Iron: <1
+        TDS: <300
+        TBC: <100000
+        SRB: <100
+    - EAF#1:
+        pH: 8.5-9.5
+        TH: <10
+        P-Alk: as per pH
+        M-Alk: as per pH
+        Chloride: <50
+        Conductivity: <1000
+        Turbidity: <20
+        TSS: <20
+        Nitrite: 250-300
+        Iron: <0.1
+        TDS: <600
+        TBC: <100000
+        SRB: <100
+    - EAF#2:
+        pH: 8.5-9.F5
+        TH: <10
+        P-Alk: as per pH
+        M-Alk: as per pH
+        Chloride: <50
+        Conductivity: <1000
+        Turbidity: <20
+        TSS: <20
+        Nitrite: 250-300
+        Iron: <0.1
+        TDS: <600
+        TBC: <100000
+        SRB: <100
+    - FES:
+        pH: 8.5-9.5
+        TH: <10
+        P-Alk: as per pH
+        M-Alk: as per pH
+        Chloride: <50
+        Conductivity: <1000
+        Turbidity: <20
+        TSS: <20
+        Nitrite: 250-300
+        Iron: <0.1
+        TDS: <600
+        TBC: <100000
+        SRB: <100
+  {page: hrscc_report.html}
+    (no ranges found)
+  {page: spray_og.html}
+    (no ranges found)
+
+[SMS-3]
+  {page: sms3_report.html}
+    (no ranges found)

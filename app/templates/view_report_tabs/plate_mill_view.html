@@ -1,0 +1,49 @@
+{% set data = processed_data %}
+{% set params = ['pH', 'Conductivity', 'TDS', 'TH', 'Ca-H', 'Mg-H', 'Chloride', 'P-Alkalinity', 'M-Alkalinity', 'Silica', 'O-Phosphate', 'TSS', 'Turbidity', 'Iron', 'NITRITE', 'COC'] %}
+{% set units = { 'pH': '', 'Conductivity': 'µS/cm', 'TDS': 'ppm', 'TH': 'ppm as CaCO3', 'Ca-H': 'ppm as CaCO3', 'Mg-H': 'ppm as CaCO3', 'Chloride': 'ppm as CaCO3', 'P-Alkalinity': 'ppm as CaCO3', 'M- Alkalinity': 'ppm as CaCO3', 'Silica': 'ppm as sio2', 'O-Phosphate': 'ppm as po4', 'TSS': 'ppm', 'Turbidity': 'NTU', 'Iron': 'ppm as Fe+2', 'NITRITE': 'PPM', 'COC': '' } %}
+
+<table class="table table-bordered align-middle text-center">
+    <thead style="background-color: #003B70; color: white;">
+        <tr>
+            <th rowspan="2" style="vertical-align: middle;">Parameter</th>
+            <th rowspan="2" style="vertical-align: middle;">Unit</th>
+            <th colspan="3">Makeup Water</th>
+            <th colspan="3">DCW</th>
+            <th colspan="2">FCW</th>
+            <th colspan="2">ICW</th>
+            <th colspan="2">RHF Softwater</th>
+        </tr>
+        <tr>
+            <th>Limit Pond 07</th><th>Pond-7 Actual</th><th>Makeup Tank</th>
+            <th>Limit</th><th>DCW Actual</th><th>ACC Actual</th>
+            <th>Limit</th><th>Actual</th>
+            <th>Limit</th><th>Actual</th>
+            <th>Limit</th><th>Actual</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p_key in params %}
+        <tr style="background-color: {% if loop.index % 2 == 0 %}#ffffff{% else %}#F9FAFC{% endif %};">
+            <td style="background-color: #F1F1F1;" class="fw-semibold">{{ p_key }}</td>
+            <td style="background-color: #F1F1F1;">{{ units[p_key] }}</td>
+            
+            <td class="fw-bold" style="background-color: #FFF3ED;">{{ data.get(p_key, {}).get('POND07_LIMIT', {}).get('range', '-') }}</td>
+            <td>{{ data.get(p_key, {}).get('POND07_ACTUAL', {}).get('value', '-') }}</td>
+            <td>{{ data.get(p_key, {}).get('MAKEUP_TANK', {}).get('value', '-') }}</td>
+            
+            <td class="fw-bold" style="background-color: #FFF3ED;">{{ data.get(p_key, {}).get('DCW_LIMIT', {}).get('range', '-') }}</td>
+            <td>{{ data.get(p_key, {}).get('DCW_ACTUAL', {}).get('value', '-') }}</td>
+            <td>{{ data.get(p_key, {}).get('ACC_ACTUAL', {}).get('value', '-') }}</td>
+
+            <td class="fw-bold" style="background-color: #FFF3ED;">{{ data.get(p_key, {}).get('FCW_LIMIT', {}).get('range', '-') }}</td>
+            <td>{{ data.get(p_key, {}).get('FCW_ACTUAL', {}).get('value', '-') }}</td>
+
+            <td class="fw-bold" style="background-color: #FFF3ED;">{{ data.get(p_key, {}).get('ICW_LIMIT', {}).get('range', '-') }}</td>
+            <td>{{ data.get(p_key, {}).get('ICW_ACTUAL', {}).get('value', '-') }}</td>
+            
+            <td class="fw-bold" style="background-color: #FFF3ED;">{{ data.get(p_key, {}).get('RHF_LIMIT', {}).get('range', '-') }}</td>
+            <td>{{ data.get(p_key, {}).get('RHF_ACTUAL', {}).get('value', '-') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

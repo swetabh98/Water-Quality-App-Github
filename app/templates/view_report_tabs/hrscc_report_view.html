@@ -1,0 +1,22 @@
+{% set systems = ['HRSCC INLET', 'HRSCC OUTLET'] %}
+{% set p_keys = ['pH', 'TH', 'CaH', 'MgH', 'P-Alk', 'M-Alk', 'Chloride', 'Conductivity', 'Turbidity', 'TSS', 'TDS'] %}
+<table class="table table-bordered text-center align-middle">
+    <thead class="table-light">
+        <tr>
+            <th rowspan="2">System</th><th rowspan="2">pH</th><th colspan="3">Hardness</th><th colspan="2">Alkalinity</th>
+            <th rowspan="2">Chloride</th><th rowspan="2">Conductivity</th><th rowspan="2">Turbidity</th>
+            <th rowspan="2">TSS</th><th rowspan="2">TDS</th>
+        </tr>
+        <tr><th>TH</th><th>CaH</th><th>MgH</th><th>P-Alk</th><th>M-Alk</th></tr>
+    </thead>
+    <tbody>
+        {% for system_name in systems %}
+        <tr>
+            <td><strong>{{ system_name }}</strong></td>
+            {% for p_key in p_keys %}
+            <td>{{ params.get('hrscc_report_' + system_name|urlencode + '_' + p_key, '-') }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

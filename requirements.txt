@@ -1,0 +1,24 @@
+# Core Flask App
+Flask==2.3.2
+Flask-WTF==1.1.1
+Flask-Login==0.6.3
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate
+python-dotenv==1.0.1
+email-validator==2.1.0
+
+# Fixed Dependencies for Compatibility
+Werkzeug==2.3.8         # Fixed the 'url_encode' ImportError with Flask-WTF
+WTForms==3.1.2
+pandas==2.2.2
+
+# PDF Generation Dependencies (fixed to compatible versions for xhtml2pdf==0.2.9)
+xhtml2pdf==0.2.9
+reportlab==3.6.12       # Fixed the 'ShowBoundaryValue' ImportError
+svglib==1.2.1           # Fixed the dependency conflict with ReportLab 3.6.12
+
+# Utilities & Deployment
+openpyxl==3.1.2
+waitress              # Added the missing production WSGI server
+# PostgreSQL driver
+psycopg2-binary

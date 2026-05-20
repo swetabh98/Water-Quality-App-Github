@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+{% block title %}SMS-3 Report{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="text-center mb-3">
+        <h3 class="mb-0">Daily Cooling Water Analysis Report --- SMS III</h3>
+        <p><strong>Date:</strong> {{ sampling_time.strftime('%d.%m.%Y') }}</p>
+    </div>
+
+    <form method="POST">
+        <h5 class="mt-4 fw-bold">ICW & DCW SYSTEM</h5>
+        <div class="table-responsive">
+            <table class="table table-bordered text-center align-middle small">
+                <thead class="table-primary">
+                    <tr>
+                        <th rowspan="2">System</th><th rowspan="2">Parameters</th><th>pH</th><th>TH</th><th>CaH</th><th>MgH</th><th>P-Alk.</th><th>M-Alk.</th><th>Chloride</th>
+                        <th>Conductivity</th><th>Turbidity</th><th>TSS*</th><th>TDS</th><th>Iron</th><th>Oil/Grease</th>
+                        <th>Zinc</th><th>Phosphate</th><th>COC</th><th>Silica</th>
+                    </tr>
+                    <tr>
+                        <th>-</th><th>PPM as CaCO3</th><th>PPM as CaCO3</th><th>PPM as CaCO3</th><th>PPM as CaCO3</th>
+                        <th>PPM as CaCO3</th><th>PPM as CaCO3</th><th>µS/Cm</th><th>NTU</th><th>PPM</th>
+                        <th>PPM</th><th>PPM</th><th>PPM</th><th>PPM</th><th>PPM</th><th>-</th><th>PPM as Sio2</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set icw_systems = {
+                        'Raw Water': ['7.2-7.8', '< 120', '< 80', '< 40', 'Nil', 'As per pH', '< 50', '< 350', '< 5', '< 5', '< 230', '< 1.0', 'Nil', 'Nil', 'Nil', '', '< 15'],
+                        'CT-1 (EAF)': ['7.2-8.3', '< 750', '< 425', '< 325', 'Nil', 'As per pH', '< 250', '< 1800', '< 15', '< 15', '< 1170', '< 1.0', '< 1.0', 'Min 0.1 PPM', 'Min 1.0', '< 5.0', '< 75'],
+                        'CT-2 (Spray)': ['7.2-8.3', '< 250', '< 150', '< 100', 'Nil', 'As per pH', '< 150', '< 750', '< 15', '< 15', '< 500', '< 1.0', '< 1.0', 'Nil', 'Min 1.0', '< 3.0', '< 50'],
+                        'CT-3 (VD)': ['7.2-8.3', '< 300', '< 200', '< 150', 'Nil', 'As per pH', '< 150', '< 1000', '< 20', '< 20', '< 650', '< 1.0', '< 1.0', 'Min 0.1 PPM', 'Min 1.0', '< 3.0', '< 50'],
+                        'CT-4 (Billet)': ['7.2-8.3', '< 750', '< 425', '< 325', 'Nil', 'As per pH', '< 250', '< 1800', '< 15', '< 15', '< 1170', '< 1.0', '< 1.0', 'Min 0.1 PPM', 'Min 1.0', '< 5.0', '< 75']
+                    } %}
+                    {% set icw_params = ['pH', 'TH', 'CaH', 'MgH', 'P-Alk', 'M-Alk', 'Chloride', 'Conductivity', 'Turbidity', 'TSS', 'TDS', 'Iron', 'Oil/Grease', 'Zinc', 'Phosphate', 'COC', 'Silica'] %}
+                    {% for system_name, limits in icw_systems.items() %}
+                    <tr>
+                        <td rowspan="2"><strong>{{ system_name }}</strong></td>
+                        <td>LIMIT</td>
+                        {% for limit in limits %}<td>{{ limit }}</td>{% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Actual</td>
+                        {% for param in icw_params %}
+                        <td><input style="width: 60px;" type="text" name="sms3_icw_{{ system_name|urlencode }}_{{ param }}_value" class="form-control form-control-sm"></td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <h5 class="mt-4 fw-bold">CLOSE LOOP SYSTEM (PRIMARY SYSTEM)</h5>
+        <div class="table-responsive">
+            <table class="table table-bordered text-center align-middle small">
+                 <thead class="table-primary">
+                    <tr>
+                        <th rowspan="2">System</th><th rowspan="2">Parameters</th><th>pH</th><th>TH</th><th>CaH</th><th>MgH</th><th>P-Alk.</th>
+                        <th>M-Alk.</th><th>Chloride</th><th>Conductivity</th><th>Turbidity</th><th>TSS*</th><th>TDS</th><th>Nitrite</th>
+                    </tr>
+                    <tr>
+                        <th>-</th><th>PPM as CaCO3</th><th>PPM as CaCO3</th><th>PPM as CaCO3</th><th>PPM as CaCO3</th>
+                        <th>PPM as CaCO3</th><th>PPM as CaCO3</th><th>µS/Cm</th><th>NTU</th><th>PPM</th><th>PPM</th><th>PPM as NaNO2</th>
+                    </tr>
+                </thead>
+                <tbody>
+                     {% set close_systems = {
+                        'SOFT WATER': ['7.2-7.8', '< 5', '< 3', '< 2', 'Nil', 'As per pH', '< 50', '< 350', '< 5', '< 5', '< 230', 'Nil'],
+                        'EAF': ['8.0-10.5', '< 10', '< 6', '< 4', 'As per pH', 'As per pH', '< 50', '< 1500', '< 10', '< 10', '< 1000', '250-350'],
+                        'COMBI': ['8.0-10.5', '< 10', '< 6', '< 4', 'As per pH', 'As per pH', '< 50', '< 1500', '< 10', '< 10', '< 1000', '250-350'],
+                        'BILLET': ['8.0-10.5', '< 10', '< 6', '< 4', 'As per pH', 'As per pH', '< 50', '< 1500', '< 10', '< 10', '< 1000', '250-350']
+                    } %}
+                    {% set close_params = ['pH', 'TH', 'CaH', 'MgH', 'P-Alk', 'M-Alk', 'Chloride', 'Conductivity', 'Turbidity', 'TSS', 'TDS', 'Nitrite'] %}
+                    {% for system_name, limits in close_systems.items() %}
+                    <tr>
+                        <td rowspan="2"><strong>{{ system_name }}</strong></td>
+                        <td>LIMIT</td>
+                        {% for limit in limits %}<td>{{ limit }}</td>{% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Actual</td>
+                        {% for param in close_params %}
+                        <td><input style="width: 60px;" type="text" name="sms3_closeloop_{{ system_name|urlencode }}_{{ param }}_value" class="form-control form-control-sm"></td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h5 class="mt-4 fw-bold">Water Consumption</h5>
+        <div class="table-responsive">
+            <table class="table table-bordered text-center align-middle small">
+                <thead class="table-primary">
+                    <tr>
+                        <th rowspan="2">System</th>
+                        <th colspan="3">Flow Meter Reading (Cubic Meter)</th>
+                        <th rowspan="2">Design Consumption</th>
+                    </tr>
+                    <tr>
+                        <th>Final</th><th>Initial</th><th>Consumption</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set consumption_systems = ['EAF (SW # 1)', 'Combi Caster ( SW#2)', 'Billet Caster ( SW#3)', 'EAF Secondary', 'VD CT', 'Spray CT', 'Billet Caster Secondary CT'] %}
+                    {% for system_name in consumption_systems %}
+                    <tr>
+                        <td><strong>{{ system_name }}</strong></td>
+                        <td><input type="text" name="sms3_consumption_{{ system_name|urlencode }}_Final_value" class="form-control form-control-sm"></td>
+                        <td><input type="text" name="sms3_consumption_{{ system_name|urlencode }}_Initial_value" class="form-control form-control-sm"></td>
+                        <td><input type="text" name="sms3_consumption_{{ system_name|urlencode }}_Consumption_value" class="form-control form-control-sm"></td>
+                        <td><input type="text" name="sms3_consumption_{{ system_name|urlencode }}_Design_value" class="form-control form-control-sm"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <h5 class="mt-4 fw-bold">CHEMICAL CONSUMPTION DETAILS</h5>
+        <div class="table-responsive">
+             <table class="table table-bordered text-center align-middle small">
+                <thead class="table-primary">
+                    <tr>
+                        <th>System</th><th>M-2825</th><th>M-651</th><th>M-10</th><th>M-2610</th><th>M-9002</th>
+                        <th>M-2521</th><th>M-7730</th><th>M-7002</th><th>M-357</th><th>M-TG</th><th>M-A 111</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set chemical_systems = ['EAF', 'Combi Caster', 'Billet Caster', 'EAF CT', 'VD CT', 'Spray CT', 'Billet Caster CT', 'Scale Pit / PSF', 'RO', 'Total Cons.', 'Design Cons.', 'Excess dosing', 'Stock', 'Pattern'] %}
+                    {% set chemical_params = ['M-2825', 'M-651', 'M-10', 'M-2610', 'M-9002', 'M-2521', 'M-7730', 'M-7002', 'M-357', 'M-TG', 'M-A 111'] %}
+                    {% for system_name in chemical_systems %}
+                    <tr>
+                        <td><strong>{{ system_name }}</strong></td>
+                        {% for param in chemical_params %}
+                        <td><input type="text" name="sms3_chemical_{{ system_name|urlencode }}_{{ param }}_value" class="form-control form-control-sm"></td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h5 class="mt-4 fw-bold">Scale Pit Analysis</h5>
+        <div class="table-responsive">
+            <table class="table table-bordered text-center align-middle small">
+                <thead class="table-primary">
+                    <tr>
+                        <th rowspan="2">Caster Scalpit</th>
+                        <th colspan="2">Oil & Grease</th>
+                        <th colspan="2">TSS</th>
+                    </tr>
+                    <tr>
+                        <th>Inlet</th>
+                        <th>Outlet</th>
+                        <th>Inlet</th>
+                        <th>Outlet</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Limits</strong></td>
+                        <td>&lt;10</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>&lt;10</td>
+                    </tr>
+                     <tr>
+                        <td><strong>Actual</strong></td>
+                        <td><input type="text" name="sms3_scalepit_Oil_Grease_Inlet_value" class="form-control form-control-sm"></td>
+                        <td><input type="text" name="sms3_scalepit_Oil_Grease_Outlet_value" class="form-control form-control-sm"></td>
+                        <td><input type="text" name="sms3_scalepit_TSS_Inlet_value" class="form-control form-control-sm"></td>
+                        <td><input type="text" name="sms3_scalepit_TSS_Outlet_value" class="form-control form-control-sm"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-3">
+             <label for="remarks" class="form-label fw-bold">Remarks:</label>
+             <textarea class="form-control" id="remarks" name="sms3_remarks_value" rows="3"></textarea>
+        </div>
+
+        <div class="mt-4 text-center">
+            <button type="submit" class="btn btn-success btn-lg px-5">Submit SMS-3 Report</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // 1. MgH = TH - CaH | For ICW and Close Loop Systems
+    const updateMgH = (prefix) => {
+        const th = parseFloat(document.querySelector(`input[name='${prefix}_TH_value']`)?.value) || 0;
+        const ca = parseFloat(document.querySelector(`input[name='${prefix}_CaH_value']`)?.value) || 0;
+        const mgInput = document.querySelector(`input[name='${prefix}_MgH_value']`);
+        if (mgInput) mgInput.value = (th - ca).toFixed(2);
+    };
+
+    document.querySelectorAll("input[name$='TH_value'], input[name$='CaH_value']").forEach(input => {
+        input.addEventListener("input", () => {
+            const prefix = input.name.replace(/_(TH|CaH)_value$/, '');
+            updateMgH(prefix);
+        });
+    });
+
+    // 2. TDS = Conductivity × 0.65
+    document.querySelectorAll("input[name$='Conductivity_value']").forEach(input => {
+        input.addEventListener("input", () => {
+            const prefix = input.name.replace('_Conductivity_value', '');
+            const tdsInput = document.querySelector(`input[name='${prefix}_TDS_value']`);
+            const conductivity = parseFloat(input.value) || 0;
+            if (tdsInput) tdsInput.value = (conductivity * 0.65).toFixed(2);
+        });
+    });
+
+// 3. Consumption = (Final - Initial) * 10
+const updateConsumption = (prefix) => {
+    const final = parseFloat(document.querySelector(`input[name='${prefix}_Final_value']`)?.value) || 0;
+    const initial = parseFloat(document.querySelector(`input[name='${prefix}_Initial_value']`)?.value) || 0;
+    const out = document.querySelector(`input[name='${prefix}_Consumption_value']`);
+    if (out) out.value = ((final - initial) * 10).toFixed(2);
+};
+
+document.querySelectorAll("input[name$='Final_value'], input[name$='Initial_value']").forEach(input => {
+    input.addEventListener("input", () => {
+        const prefix = input.name.replace(/_(Final|Initial)_value$/, '');
+        updateConsumption(prefix);
+    });
+});
+
+    // 4. Chemical Total = sum of chemicals on focus
+    const chemicalParams = ['M-2825', 'M-651', 'M-10', 'M-2610', 'M-9002', 'M-2521', 'M-7730', 'M-7002', 'M-357', 'M-TG', 'M-A 111'];
+
+    chemicalParams.forEach(param => {
+        const totalField = document.querySelector(`input[name='sms3_chemical_Total+Cons._${param}_value']`);
+        if (totalField) {
+            totalField.addEventListener("focus", () => {
+                let total = 0;
+                document.querySelectorAll(`input[name^='sms3_chemical_'][name$='_${param}_value']`).forEach(i => {
+                    if (!i.name.includes('Total+Cons.') && !i.name.includes('Design+Cons.') && !i.name.includes('Excess+dosing')) {
+                        total += parseFloat(i.value) || 0;
+                    }
+                });
+                totalField.value = total.toFixed(2);
+            });
+        }
+    });
+
+    // 5. Excess Dosing = Total - Design
+    chemicalParams.forEach(param => {
+        const total = document.querySelector(`input[name='sms3_chemical_Total+Cons._${param}_value']`);
+        const design = document.querySelector(`input[name='sms3_chemical_Design+Cons._${param}_value']`);
+        const excess = document.querySelector(`input[name='sms3_chemical_Excess+dosing_${param}_value']`);
+        if (total && design && excess) {
+            [total, design].forEach(el => {
+                el.addEventListener("input", () => {
+                    const t = parseFloat(total.value) || 0;
+                    const d = parseFloat(design.value) || 0;
+                    excess.value = (t - d).toFixed(2);
+                });
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

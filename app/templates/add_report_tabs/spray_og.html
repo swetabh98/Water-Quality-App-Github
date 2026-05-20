@@ -1,0 +1,49 @@
+{% set headers = [ 'SL No', 'Date', 'Sample Point', 'Limit (PPM)', 'Oil & Grease (PPM) - Slab', 'Oil & Grease (PPM) - BL & COMBI', 'Nozzle Choking - Slab', 'Nozzle Choking - Billet', 'Nozzle Choking - Combi' ] %}
+{% set keys = [ 'SL_No', 'Date', 'Sample_Point', 'Limit', 'Oil_Slab', 'Oil_BL_COMBI', 'Nozzle_Slab', 'Nozzle_Billet', 'Nozzle_Combi' ] %}
+
+<div class="tab-pane fade show" id="tab4">
+    <h4 class="mt-4">Spray O & G</h4>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                {% for h in headers %}
+                    <th>{{ h }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody id="spray-og-body">
+            {% for row in range(8) %}
+            <tr>
+                {% for key in keys %}
+                <td>
+                    <input type="{{ 'date' if key == 'Date' else 'text' }}"
+                           name="spray_og_{{ key }}_{{ row }}_value"
+                           class="form-control"
+                           value="{{ existing_data.get('spray_og_' + key + '_' + row|string, '') }}">
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="d-flex justify-content-end"> <button type="button" class="btn btn-secondary" onclick="addRowSprayOG()">Add Row</button>
+    </div>
+</div>
+
+<script>
+function addRowSprayOG() {
+    const table = document.getElementById('spray-og-body');
+    const rowCount = table.rows.length;
+    const row = table.insertRow();
+    const fields = ['SL_No', 'Date', 'Sample_Point', 'Limit', 'Oil_Slab', 'Oil_BL_COMBI', 'Nozzle_Slab', 'Nozzle_Billet', 'Nozzle_Combi'];
+    fields.forEach(field => {
+        const cell = row.insertCell();
+        const input = document.createElement('input');
+        input.className = 'form-control';
+        input.name = `spray_og_${field}_${rowCount}_value`;
+        if (field === 'Date') input.type = 'date';
+        else input.type = 'text';
+        cell.appendChild(input);
+    });
+}
+</script>

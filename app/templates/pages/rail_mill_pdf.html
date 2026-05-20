@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rail Mill Report - {{ report.id }}</title>
+    <style>
+        @page {
+            size: A3 landscape;
+            margin: 1cm;
+        }
+        body {
+            font-family: Helvetica, sans-serif;
+            font-size: 8.5px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        .header img {
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 40px;
+        }
+        .header h3 {
+            margin: 0;
+            color: #003B70;
+            font-weight: bold;
+        }
+        .header p {
+            margin: 3px 0 0 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        th, td {
+            border: 1px solid #888;
+            padding: 3px;
+            text-align: center;
+            word-wrap: break-word;
+        }
+        thead th {
+            background-color: #e6e6e6;
+            color: #000;
+            font-weight: bold;
+        }
+        .limit-row td {
+            background-color: #f2f2f2;
+        }
+        .system-col {
+            width: 9%;
+            font-weight: bold;
+            background-color: #e9ecef;
+        }
+        .param-col {
+            width: 9%;
+            font-weight: bold;
+        }
+        .content-col {
+            width: 5%;
+        }
+
+        .footer {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 7.5px;
+            color: #777;
+        }
+
+        .meta {
+            margin-bottom: 8px;
+            font-size: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h3>Rail Mill Water Analysis Report</h3>
+        <p><strong>Date:</strong> {{ report.sampling_time.strftime('%d.%m.%Y') }}</p>
+        <p class="meta">
+            <strong>Report ID:</strong> {{ report.id }} |
+            <strong>Submitted by:</strong> {{ report.user.email }} |
+            <strong>Timestamp:</strong> {{ report.sampling_time.strftime('%Y-%m-%d %H:%M:%S') }}
+        </p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th rowspan="2" class="system-col">System</th>
+                <th rowspan="2" class="param-col">Parameters</th>
+                <th class="content-col">pH</th>
+                <th class="content-col">Conductivity</th>
+                <th class="content-col">Turbidity</th>
+                <th class="content-col">TH</th>
+                <th class="content-col">CaH</th>
+                <th class="content-col">MgH</th>
+                <th class="content-col">Chloride</th>
+                <th class="content-col">M-Alkalinity</th>
+                <th class="content-col">Nitrite</th>
+                <th class="content-col">IRON</th>
+                <th class="content-col">Silica</th>
+                <th class="content-col">TDS</th>
+                <th class="content-col">TSS</th>
+                <th class="content-col">Oil & Grease</th>
+                <th class="content-col">Zinc</th>
+                <th class="content-col">Phosphate</th>
+                <th class="content-col">Remark</th>
+            </tr>
+            <tr>
+                <th>-</th><th>µS/cm</th><th>NTU</th><th>ppm</th><th>ppm</th><th>ppm</th><th>ppm</th>
+                <th>ppm</th><th>ppm</th><th>ppm</th><th>ppm</th><th>ppm</th><th>ppm</th><th>ppm</th>
+                <th>ppm</th><th>ppm</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set systems = {
+                'RHF': {
+                    'limits': ['8.5-10.5', '<1500', '<10', '<10', '<7', '<3', '<50', 'As per pH', '150-250', '<0.5', '<50', '<900', '<100', '0', 'N/A', 'N/A', ''],
+                    'params': ['pH', 'Conductivity', 'Turbidity', 'TH', 'CaH', 'MgH', 'Chloride', 'M-Alkalinity', 'Nitrite', 'IRON', 'Silica', 'TDS', 'TSS', 'Oil_and_Grease', 'Zinc', 'Phosphate', 'Remark']
+                },
+                'DCW': {
+                    'limits': ['7.8-9.0', '<1000', '<25 NTU', '<350', '<250', '<100', '<150', 'As per pH', 'NA', '<1.0', '<80', '<650', '<25', '<25', '0.2-0.5', '4.0-6.0', ''],
+                    'params': ['pH', 'Conductivity', 'Turbidity', 'TH', 'CaH', 'MgH', 'Chloride', 'M-Alkalinity', 'Nitrite', 'IRON', 'Silica', 'TDS', 'TSS', 'Oil_and_Grease', 'Zinc', 'Phosphate', 'Remark']
+                },
+                'ICW Mill': {
+                    'limits': ['8.0-8.4', '<1000', '<25 NTU', '<600', '<400', '<200', '<350', 'As per pH', 'NA', '<1.0', '<80', '<600', '<15', '0', '0.2-0.5', '2.0-4.0', ''],
+                    'params': ['pH', 'Conductivity', 'Turbidity', 'TH', 'CaH', 'MgH', 'Chloride', 'M-Alkalinity', 'Nitrite', 'IRON', 'Silica', 'TDS', 'TSS', 'Oil_and_Grease', 'Zinc', 'Phosphate', 'Remark']
+                }
+            } %}
+
+            {% for system_name, data in systems.items() %}
+            <tr class="limit-row">
+                <td class="system-col" rowspan="2"><strong>{{ system_name }}</strong></td>
+                <td class="param-col">LIMIT</td>
+                {% for limit in data.limits %}
+                <td class="content-col">{{ limit }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+    <td class="param-col">Actual</td>
+    {% set param_key_map = {
+        "Conductivity": "Cond",
+        "Turbidity": "Turb",
+        "M-Alkalinity": "M-Alk"
+    } %}
+
+    {% for param in data.params %}
+        {% set db_key = param_key_map.get(param, param) %}
+        <td class="content-col">{{ params.get('rail_mill_' + system_name|urlencode + '_' + db_key, '-') }}</td>
+    {% endfor %}
+</tr>
+{% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Made by Central Automation Cell – Jindal Steel & Power
+    </div>
+
+</body>
+</html>
