@@ -10,12 +10,12 @@ Flask-Migrate==4.0.7
 python-dotenv==1.0.1
 email-validator==2.1.0
 
-pandas==2.2.2
-openpyxl==3.1.2
+pandas==2.2.3
+openpyxl==3.1.5
 
-xhtml2pdf==0.2.9
-reportlab==3.6.12
-svglib==1.2.1
+xhtml2pdf==0.2.16
+reportlab==4.2.5
+svglib==1.5.1
 
-waitress==3.0.0
-psycopg2-binary==2.9.9
+waitress==3.0.2
+psycopg2-binary==2.9.10
