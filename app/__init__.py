@@ -5,6 +5,8 @@ from urllib.parse import unquote
 import requests
 import os
 
+from werkzeug.security import generate_password_hash
+
 from config import Config
 from .models import db, User
 from .postgres_bootstrap import ensure_postgres_database, create_missing_tables
@@ -44,6 +46,86 @@ HOP_BY_HOP_HEADERS = {
 }
 
 
+def _set_if_column(model_obj, column_names, value):
+    """
+    Safely set a field only if the User model has that column.
+    This keeps the code compatible with different User model shapes.
+    """
+    try:
+        available_columns = set(model_obj.__table__.columns.keys())
+    except Exception:
+        available_columns = set()
+
+    for column_name in column_names:
+        if column_name in available_columns:
+            setattr(model_obj, column_name, value)
+
+
+def _seed_vercel_demo_admin_user():
+    """
+    Creates/updates a demo admin user on Vercel.
+
+    Login to use:
+    User / ID: admin
+    Password: admin123
+
+    This runs only for Vercel/demo SQLite mode.
+    """
+    try:
+        available_columns = set(User.__table__.columns.keys())
+    except Exception:
+        available_columns = set()
+
+    password_hash = generate_password_hash("admin123")
+
+    existing_user = None
+
+    # Try finding by username first.
+    if "username" in available_columns:
+        try:
+            existing_user = User.query.filter_by(username="admin").first()
+        except Exception:
+            existing_user = None
+
+    # Then try email, because many Flask apps use email as login field.
+    if existing_user is None and "email" in available_columns:
+        try:
+            existing_user = User.query.filter_by(email="admin").first()
+        except Exception:
+            existing_user = None
+
+    # If no user exists, create one.
+    if existing_user is None:
+        demo_user = User()
+
+        _set_if_column(demo_user, ["username", "user_name", "userid", "user_id", "login_id"], "admin")
+        _set_if_column(demo_user, ["email"], "admin")
+        _set_if_column(demo_user, ["name", "full_name", "display_name"], "admin")
+        _set_if_column(demo_user, ["password_hash", "password"], password_hash)
+        _set_if_column(demo_user, ["role"], "admin")
+        _set_if_column(demo_user, ["department"], "Admin")
+        _set_if_column(demo_user, ["is_admin"], True)
+        _set_if_column(demo_user, ["is_approved"], True)
+        _set_if_column(demo_user, ["active", "is_active"], True)
+
+        db.session.add(demo_user)
+        db.session.commit()
+        return
+
+    # If user already exists, force password/admin status so login always works.
+    _set_if_column(existing_user, ["username", "user_name", "userid", "user_id", "login_id"], "admin")
+    _set_if_column(existing_user, ["email"], "admin")
+    _set_if_column(existing_user, ["name", "full_name", "display_name"], "admin")
+    _set_if_column(existing_user, ["password_hash", "password"], password_hash)
+    _set_if_column(existing_user, ["role"], "admin")
+    _set_if_column(existing_user, ["department"], "Admin")
+    _set_if_column(existing_user, ["is_admin"], True)
+    _set_if_column(existing_user, ["is_approved"], True)
+    _set_if_column(existing_user, ["active", "is_active"], True)
+
+    db.session.commit()
+
+
 def create_app(config_class=Config):
     """Creates and configures the Flask app."""
     app = Flask(__name__)
@@ -58,6 +140,9 @@ def create_app(config_class=Config):
     # On Vercel:
     # - Do not connect to internal PostgreSQL server.
     # - Use temporary SQLite database inside /tmp.
+    # - Create demo login user:
+    #   User / ID: admin
+    #   Password: admin123
     # ---------------------------------------------------------------------
     is_vercel_demo = bool(
         os.environ.get("VERCEL") or os.environ.get("WATER_QUALITY_DEMO_MODE")
@@ -97,6 +182,7 @@ def create_app(config_class=Config):
     if is_vercel_demo:
         with app.app_context():
             db.create_all()
+            _seed_vercel_demo_admin_user()
     else:
         create_missing_tables(app, db)
 
